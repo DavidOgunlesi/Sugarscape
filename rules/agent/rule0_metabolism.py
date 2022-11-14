@@ -5,19 +5,27 @@ import random
 def Init(sugarscape: Sugarscape, agent: Agent):
     minMeta = sugarscape.GetHyperParameter("min_metabolism")
     maxMeta = sugarscape.GetHyperParameter("max_metabolism")
-    agent.SetProperty("metabolism", random.randint(minMeta, maxMeta))
+    
+    # If already set (from being born), don't reset
+    if agent.GetProperty("metabolism") == None:
+        agent.SetProperty("metabolism", random.randint(minMeta, maxMeta))
     
     #endowment
-    agent.SetProperty("sugar_wealth", sugarscape.GetHyperParameter("initial_endowment"))
+    min, max = sugarscape.GetHyperParameter("initial_endowment_range")
+    if agent.GetProperty("sugar_wealth") == None:
+        agent.SetProperty("sugar_wealth", random.randint(min, max))
 
 def Step(sugarscape: Sugarscape, agent: Agent):
     # Collect sugar at position
     sugarValue = sugarscape.GetScape("sugar").GetValue(agent.x, agent.y)
+    agent.SetProperty("sugar_gathered", sugarValue)
+    
     # Remove all sugar at site
     sugarscape.GetScape("sugar").SetDefault(agent.x, agent.y)
     currentSugarWealth = agent.GetProperty("sugar_wealth")
     metabolicRate = agent.GetProperty("metabolism")
     finalValue = currentSugarWealth + sugarValue - metabolicRate
+    agent.SetProperty("sugar_consumed", sugarValue - metabolicRate)
     finalValue = max(finalValue, 0)
     agent.SetProperty("sugar_wealth", finalValue)
     

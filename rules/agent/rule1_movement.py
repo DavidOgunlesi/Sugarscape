@@ -4,7 +4,9 @@ import random
 
 def Init(sugarscape: Sugarscape, agent: Agent):
     max = sugarscape.GetHyperParameter("max_vision")
-    agent.SetProperty("vision", random.randint(1, max))
+    
+    if agent.GetProperty("vision") == None:
+        agent.SetProperty("vision", random.randint(1, max))
 
 def Step(sugarscape: Sugarscape, agent: Agent):
     visionVectors = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
@@ -60,7 +62,7 @@ def StepPollutionModified(sugarscape: Sugarscape, agent: Agent):
             
             sugarVal = sugarscape.GetScape("sugar").GetValue(x, y)
             polVal = sugarscape.GetScape("pollution").GetValue(x, y)
-            val = sugarVal/max(polVal, 0.0001)
+            val = sugarVal/max(polVal, 1)
             #IF the sugar:pollution ratio is better than the current best, set it as the best
             if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y):
                 bestSugarValue = (val, (x, y))

@@ -7,6 +7,7 @@ class Scape():
         self.height = height
         self.scapeAttribute = scapeAttribute
         self.intialState = []
+        self._scape_snapshot = [] # taken at start of each epoch
         self._scape: List[float] = [scapeAttribute.defaultValue for _ in range(self.width)] * self.height
         self.unsetIndexes = [i for i in range(len(self._scape))]
         self.dfCache = None
@@ -30,6 +31,10 @@ class Scape():
             return self.scapeAttribute.defaultValue
         
         return self.intialState[idx]    
+    
+    def GetSnapshotValue(self, x: int, y: int) -> int:
+        idx = x + y * self.width
+        return self._scape_snapshot[idx]    
         
     def GetValue(self, x: int, y: int) -> int:
         idx = x + y * self.width
@@ -110,6 +115,9 @@ class Scape():
     def SaveInitialState(self):
         self.intialState = copy.deepcopy(self._scape)
     
+    def SaveSnapshot(self):
+        self._scape_snapshot = copy.deepcopy(self._scape)
+    
     def IndexToCoordinates(self, idx: int) -> Tuple[int, int]:
         x = idx % self.width
         y = idx // self.width
@@ -121,8 +129,13 @@ class Scape():
     def IsCellDefault(self, x: int, y: int) -> bool:
         return self.GetValue(x, y) == self.scapeAttribute.defaultValue
     
-    def Clear(self):
-        self._scape = [self.scapeAttribute.defaultValue for _ in range(len(self._scape))]
+    def Clear(self, overrivedDefaultValue: int = None):
+        if overrivedDefaultValue is not None:
+            defVal = overrivedDefaultValue
+        else:
+            defVal = self.scapeAttribute.defaultValue
+            
+        self._scape = [defVal for _ in range(len(self._scape))]
     
     def PrintScape(self) -> str:
         result = ""
@@ -149,26 +162,34 @@ class Scape():
     
     def Normalise(self, normaliseToRange:bool):
         min = np.min(self._scape)
-        max = np.max(self._scape)
-        lst = np.array(self._scape)
-        lst: np.ndarray = (lst - min) / (max - min)
-        self._scape = lst.tolist()
-        
+        max = np.max(self._scape) 
+        if min != max:
+            lst = np.array(self._scape)
+            lst: np.ndarray = (lst - min) / (max - min)
+            self._scape = lst.tolist()
+        else:
+            self.Clear(0)
+            
         if normaliseToRange:
             arr = np.array(self._scape)
             arr *= (self.scapeAttribute.maxValue - self.scapeAttribute.minValue)
             arr += self.scapeAttribute.minValue
             self._scape = arr.tolist()
      
-    def DefaultValuesByCutOff(self, cutOff: float, reverse: bool = False):
+    def DefaultValuesByCutOff(self, cutOff: float, reverse: bool = False, overrideDefaultValue: bool = False, overrideDefaultValueMultiplier: float = 1.0):
         for i in range(len(self._scape)):
             #print(self._scape[i])
             if self._scape[i] >= cutOff and not reverse:
                 continue
             elif self._scape[i] < cutOff and reverse:
                 continue
-            #print("setting default")
-            self._scape[i] = self.scapeAttribute.defaultValue
+            
+            if overrideDefaultValue:
+                defVal = self._scape[i]
+            else:
+                defVal = self.scapeAttribute.defaultValue
+                
+            self._scape[i] = defVal * overrideDefaultValueMultiplier
             self.unsetIndexes.append(i)
         
     def Sum(self):

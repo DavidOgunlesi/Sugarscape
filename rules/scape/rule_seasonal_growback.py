@@ -12,8 +12,6 @@ def Step(epoch: int, sugarscape:Sugarscape, scape:Scape):
             scape.SetProperty("season", "winter")
         else:
             scape.SetProperty("season", "summer")
-            
-    print(scape.GetProperty("season"))
 
 def CellStep(sugarscape: Sugarscape, scape:Scape, x, y, value: float):
     tileInSeason = scape.GetProperty("season")

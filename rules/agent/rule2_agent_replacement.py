@@ -3,9 +3,11 @@ from core.sugarscape import Sugarscape
 import random
 
 def Init(sugarscape: Sugarscape, agent: Agent):
-    minAge = sugarscape.GetHyperParameter("min_life_span")
-    maxAge = sugarscape.GetHyperParameter("max_life_span")
-    agent.SetProperty("life_span", random.randint(minAge, maxAge))
+    minAge, maxAge = sugarscape.GetHyperParameter("life_span_range")
+    
+    if agent.GetProperty("life_span") == None:
+        agent.SetProperty("life_span", random.randint(minAge, maxAge))
+        
     agent.SetProperty("age", 0)
 
 def Step(sugarscape: Sugarscape, agent: Agent):
@@ -18,8 +20,8 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         #Kill & Create Replacement
         sugarscape.KillAgent(agent)
         
-    if agent.GetProperty("dead") == 1:
-        sugarscape.AddNewAgent()
+    # if agent.GetProperty("dead") == 1:
+    #     sugarscape.AddNewAgent()
         
         
         
