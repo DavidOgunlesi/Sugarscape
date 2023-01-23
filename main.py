@@ -33,7 +33,7 @@ import rules.agent.rule2_agent_replacement as rule2
 s.AddAgentRule(rule2.Init, rule2.Step)
 
 import rules.agent.rule3_pollution_formation as rule3
-s.AddAgentRule(rule3.Init, rule3.Step)
+#s.AddAgentRule(rule3.Init, rule3.Step)
 
 import rules.agent.rule4_sex as rule4
 s.AddAgentRule(rule4.Init, rule4.Step)
@@ -51,7 +51,7 @@ s.SetHyperParameter("pollution_per_sugar", 0.2)
 s.SetHyperParameter("diffusion_rate", 1.05)
 s.SaveEpochs(True, 0)
 
-SIM_TIME = 10
+SIM_TIME = 100
 s.RunSimulation(SIM_TIME)
 saveStates = s.GetScapeSaveStates()
 agentStates = s.GetAgentSaveStates()
