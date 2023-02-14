@@ -1,15 +1,16 @@
 from core.imports import *
 from core.attribute import Attribute
+from nptyping import NDArray, Int32, Float32
 
 class Scape():
     def __init__(self, width: int, height: int, scapeAttribute: Attribute): 
         self.width = width
         self.height = height
         self.scapeAttribute = scapeAttribute
-        self.intialState = []
-        self._scape_snapshot = [] # taken at start of each epoch
-        self._scape: List[float] = [scapeAttribute.defaultValue for _ in range(self.width)] * self.height
-        self.unsetIndexes = [i for i in range(len(self._scape))]
+        self.intialState: NDArray[Float32] = np.array([],dtype=np.float32) 
+        self._scape_snapshot: NDArray[Float32] = np.array([],dtype=np.float32) # taken at start of each epoch
+        self._scape: NDArray[Float32] = np.array([scapeAttribute.defaultValue for _ in range(self.width)] * self.height, dtype=np.float32)
+        self.unsetIndexes: List[int] = [i for i in range(len(self._scape))]
         self.dfCache = None
         self.updated = True
         self.normaliseOnPlot = False
@@ -113,10 +114,10 @@ class Scape():
         return -1
     
     def SaveInitialState(self):
-        self.intialState = copy.deepcopy(self._scape)
+        self.intialState = np.copy(self._scape)
     
     def SaveSnapshot(self):
-        self._scape_snapshot = copy.deepcopy(self._scape)
+        self._scape_snapshot = np.copy(self._scape)
     
     def IndexToCoordinates(self, idx: int) -> Tuple[int, int]:
         x = idx % self.width
@@ -135,7 +136,7 @@ class Scape():
         else:
             defVal = self.scapeAttribute.defaultValue
             
-        self._scape = [defVal for _ in range(len(self._scape))]
+        self._scape = np.array([defVal for _ in range(len(self._scape))], dtype=np.float32)
     
     def PrintScape(self) -> str:
         result = ""

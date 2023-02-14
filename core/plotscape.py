@@ -56,8 +56,8 @@ class PlotScape():
     ########################################
     @classmethod
     def AnimPlotTimeSteps(self, sugarscape:Sugarscape, plot: str, scapeTimesteps: List[Scape], func:Callable = None):
-        sugarscape = copy.deepcopy(sugarscape)
-        scapeTimesteps = copy.deepcopy(scapeTimesteps)
+        #sugarscape = copy.deepcopy(sugarscape)
+        #scapeTimesteps = copy.deepcopy(scapeTimesteps)
         
         self.fig = plt.figure()
         self.val = 0
@@ -85,8 +85,8 @@ class PlotScape():
      
     @classmethod   
     def LinePlotAttributesOverTimeSteps(self, func:Callable, sugarscape:Sugarscape, attribName: str, scapeTimesteps: List[Dict[str, Scape]], normalise:bool = False):
-        sugarscape = copy.deepcopy(sugarscape)
-        scapeTimesteps = copy.deepcopy(scapeTimesteps)
+        #sugarscape = copy.deepcopy(sugarscape)
+        #scapeTimesteps = copy.deepcopy(scapeTimesteps)
         
         timesteps = []
         data = []
@@ -118,8 +118,8 @@ class PlotScape():
     
     @classmethod  
     def PrintAgentPropertyMean(self, sugarscape:Sugarscape, epochs: List[int], attribNames:List[str], agentTimesteps: List[List[Agent]]):
-        sugarscape = copy.deepcopy(sugarscape)
-        agentTimesteps = copy.deepcopy(agentTimesteps)
+        #sugarscape = copy.deepcopy(sugarscape)
+        #agentTimesteps = copy.deepcopy(agentTimesteps)
         
         result = "MEAN: \n"
         epochsList = [] 
@@ -128,7 +128,7 @@ class PlotScape():
                 epochsList.append(epochs[i]) 
 
         print("EPOCHS: ", epochsList)
-        for epoch in range(len(epochsList)):
+        for epoch in range(len(agentTimesteps)):
             result += f"EPOCH: {epochsList[epoch]}\n"
             lst = agentTimesteps[epoch]
             if len(lst) == 0:

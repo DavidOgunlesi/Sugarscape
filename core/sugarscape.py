@@ -20,6 +20,7 @@ class Sugarscape:
         self._agentDeleteBuffer:List[int]  = []
         self.saveEpochs = False
         self.epochSkip = 0
+        self.agentScape = None
         if height == None:
             height = width
         
@@ -29,10 +30,10 @@ class Sugarscape:
         if width < 0:
             logging.exception("Dimensions of sugarscape cannot be negative")
             
-        self.CreateScape(Attribute("agents", defaultValue=-1))
+        self.agentScape = self.CreateScape(Attribute("agents", defaultValue=-1))
         self.GetScape("agents").NormaliseOnPlot(True)
                
-    def CreateScape(self, scapeAttribute: Attribute):
+    def CreateScape(self, scapeAttribute: Attribute) -> Scape:
         """
         Creates a scape of width x height units. A scape is a resource map is a 2D array of ScapeUnits.
         Each ScapeUnit represents a cell in the Sugarscape and can have multiple attributes.
@@ -47,6 +48,7 @@ class Sugarscape:
         
         scape = Scape(self.width, self.height, scapeAttribute)
         self._scapes[scapeAttribute.attribName] = scape 
+        return scape
        
     def GetScape(self, attribName: str) -> Scape:
         if self._scapes[attribName]: 
@@ -57,8 +59,8 @@ class Sugarscape:
     
     def BirthNewAgentAtPos(self, x:int, y:int):
         id = self._totalAgentCount
-        self.GetScape("agents").SetValue(x, y, id)
-        agent = Agent(id, self.GetScape("agents"))
+        self.agentScape.SetValue(x, y, id)
+        agent = Agent(id, self.agentScape)
         self._agentCreateBuffer[id] = agent
         self._totalAgentCount += 1
         return agent
@@ -66,16 +68,16 @@ class Sugarscape:
     def AddAgents(self, agentCount: int):
         for _ in range(min(agentCount, self.width * self.height)):
             id = self._totalAgentCount
-            self.GetScape("agents").SetRandomUnit(id, True)
-            agent = Agent(id, self.GetScape("agents"))
+            self.agentScape.SetRandomUnit(id, True)
+            agent = Agent(id, self.agentScape)
             self._agents[id] = agent
             self._totalAgentCount += 1
             
     def _ReplaceAgents(self, agentCount: int):
         for _ in range(min(agentCount, self.width * self.height)):
             id = self._totalAgentCount
-            self.GetScape("agents").SetRandomUnit(id, True)
-            agent = Agent(id, self.GetScape("agents"))
+            self.agentScape.SetRandomUnit(id, True)
+            agent = Agent(id, self.agentScape)
             for init, _ in self.rules:
                 # init agent behaviour
                 init(self, agent)
@@ -86,6 +88,7 @@ class Sugarscape:
         for id in self._agentCreateBuffer:
             agent = self._agentCreateBuffer[id]
             self._agents[agent.id] = agent
+            print("BIRTH: ", agent.GetProperty("culture_tag"))
             for init, _ in self.rules:
                 # init agent behaviour
                 init(self, agent)
@@ -100,7 +103,7 @@ class Sugarscape:
         self._newAgentCount += 1
       
     def GetAgentAtPosition(self, x:int, y:int):
-        id = self.GetScape("agents").GetValue(x,y)
+        id = self.agentScape.GetValue(x,y)
         if id != -1:
             if id not in self._agents:
                 # Agent is in the buffer (probably bc they were just born) so we can ingnore them
@@ -147,7 +150,7 @@ class Sugarscape:
     def RunSimulation(self, epochCount: int = 0):
         
         self.__InitialiseSimulation()
-            
+         
         with alive_bar(max(epochCount, 0)) as bar:
             for epoch in range(max(epochCount, 0)):
                 # If all agents are dead, we can stop the simulation
@@ -156,7 +159,8 @@ class Sugarscape:
                     break
                 # Create replacements
                 bar.text(f'Creating {self._newAgentCount} new agents')
-                self._ReplaceAgents(self._newAgentCount)
+                #self._ReplaceAgents(self._newAgentCount)
+                print("REPLACING AGENTS")
                 self._BirthAgents()
                 
                 self._newAgentCount = 0
@@ -166,8 +170,11 @@ class Sugarscape:
                     self._saveStates[0].append(copy.deepcopy(self._scapes))
                     self._saveStates[1].append(copy.deepcopy(list(self._agents.values())))
                     
-                bar.text(f'Updating scapes')
+                # bar.text(f'Updating scapes')
                 # Update scape maps
+                # TODO: Optimise this step with Cython + threading
+                # SLOWEST STEP
+                print("UPDATING SCAPES")
                 for scapeName, _, step, cellstep  in self._scapeRules:
                     scape = self.GetScape(scapeName)
                     scape.SaveSnapshot()
@@ -176,14 +183,16 @@ class Sugarscape:
                         x, y = scape.IndexToCoordinates(i)
                         cellstep(self, scape, x, y, scape._scape[i])
                         
-                bar.text(f'Updating agents')
+                # bar.text(f'Updating agents')
                 # TODO: Optimise this step with Cython + threading
+                print("UPDATING AGENTS")
                 for _, rule in self.rules:
                     # Run agent behaviour
                     for id in self._agents:
                         rule(self, self._agents[id])
                 
                 
+                print("KILLING AGENTS")
                 bar.text(f'Killing {len(self._agentDeleteBuffer)} agents')
                 for id in self._agentDeleteBuffer:
                     del self._agents[id]
@@ -192,12 +201,14 @@ class Sugarscape:
                 
                 bar.text(f'Updating agent positions')
                 #Update agent positions
-                self.GetScape("agents").Clear()
+                # TODO: Optimise this step with Cython + threading
+                print("UPDATING AGENT POSITIONS")
+                self.agentScape.Clear()
                 for id in self._agents:
                     agent = self._agents[id]
-                    self.GetScape("agents").SetValue(agent.x, agent.y, agent.id)
+                    self.agentScape.SetValue(agent.x, agent.y, agent.id)
                 bar.text(f'Epoch {epoch} complete')  
-                sleep(0.01)  
+                # sleep(0.01)  
                 # Increment progress bar
                 bar()
     
