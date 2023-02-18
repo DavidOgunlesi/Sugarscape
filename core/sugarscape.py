@@ -14,6 +14,7 @@ class Sugarscape:
         self._totalAgentCount = 0
         self._newAgentCount:int = 0
         self._defaultProps: Dict[str,float] = {}
+        self._defaultFuncProps: Dict[str, Callable] = {}
         self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]]) = ([],[])
         self.rules: List[(Callable, Callable)] = []
         self._agentCreateBuffer: Dict[str, Agent] = {}
@@ -88,7 +89,7 @@ class Sugarscape:
         for id in self._agentCreateBuffer:
             agent = self._agentCreateBuffer[id]
             self._agents[agent.id] = agent
-            print("BIRTH: ", agent.GetProperty("culture_tag"))
+            #print("BIRTH: ", agent.GetProperty("culture_tag"))
             for init, _ in self.rules:
                 # init agent behaviour
                 init(self, agent)
@@ -122,11 +123,20 @@ class Sugarscape:
     def SetHyperParameter(self, attribName:str , value:float):
         self._defaultProps[attribName] = value 
     
+    def SetHyperFunction(self, attribName:str , value:Callable):
+        self._defaultFuncProps[attribName] = value
+
     def GetHyperParameter(self, attribName:str, defaultValue:float = 0):
         if attribName in self._defaultProps:
             return self._defaultProps[attribName]
         print(f"Hyperparameter {attribName} not present on sugarscape, defaulting to {defaultValue}")
         return defaultValue
+
+    def GetHyperFunction(self, attribName:str):
+        if attribName in self._defaultFuncProps:
+            return self._defaultProps[attribName]
+        print(f"HyperFunction {attribName} not present on sugarscape.")
+        return lambda x: 0
         
     def SaveEpochs(self, value:bool, epochSkip:int = 0):
         self.saveEpochs = value 
@@ -155,12 +165,12 @@ class Sugarscape:
             for epoch in range(max(epochCount, 0)):
                 # If all agents are dead, we can stop the simulation
                 if len(self._agents) == 0:
-                    print("ALL AGENTS DEAD")
+                    #print("ALL AGENTS DEAD")
                     break
                 # Create replacements
                 bar.text(f'Creating {self._newAgentCount} new agents')
                 #self._ReplaceAgents(self._newAgentCount)
-                print("REPLACING AGENTS")
+                #print("REPLACING AGENTS")
                 self._BirthAgents()
                 
                 self._newAgentCount = 0
@@ -174,7 +184,7 @@ class Sugarscape:
                 # Update scape maps
                 # TODO: Optimise this step with Cython + threading
                 # SLOWEST STEP
-                print("UPDATING SCAPES")
+                #print("UPDATING SCAPES")
                 for scapeName, _, step, cellstep  in self._scapeRules:
                     scape = self.GetScape(scapeName)
                     scape.SaveSnapshot()
@@ -185,14 +195,14 @@ class Sugarscape:
                         
                 # bar.text(f'Updating agents')
                 # TODO: Optimise this step with Cython + threading
-                print("UPDATING AGENTS")
+                #print("UPDATING AGENTS")
                 for _, rule in self.rules:
                     # Run agent behaviour
                     for id in self._agents:
                         rule(self, self._agents[id])
                 
                 
-                print("KILLING AGENTS")
+                #print("KILLING AGENTS")
                 bar.text(f'Killing {len(self._agentDeleteBuffer)} agents')
                 for id in self._agentDeleteBuffer:
                     del self._agents[id]
@@ -202,7 +212,7 @@ class Sugarscape:
                 bar.text(f'Updating agent positions')
                 #Update agent positions
                 # TODO: Optimise this step with Cython + threading
-                print("UPDATING AGENT POSITIONS")
+                #print("UPDATING AGENT POSITIONS")
                 self.agentScape.Clear()
                 for id in self._agents:
                     agent = self._agents[id]

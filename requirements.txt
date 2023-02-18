@@ -1,4 +1,8 @@
+alive_progress==3.0.1
 matplotlib==3.5.1
+names==0.3.0
+nptyping==2.4.1
 numpy==1.22.3
 pandas==1.5.1
-seaborn==0.12.1
+perlin_noise==1.12
+seaborn==0.12.2

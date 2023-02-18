@@ -2,7 +2,8 @@ from core.agent import Agent
 from core.sugarscape import Sugarscape
 import random
 from typing import List
-from global_agent_funcs import CulturalSimilarityFunction
+from rules.agent.global_agent_funcs import CulturalSimilarityFunction
+
 def Init(sugarscape: Sugarscape, agent: Agent):
     print("INIT: ", agent.GetProperty("culture_tag") == None)
     if agent.GetProperty("culture_tag") == None:

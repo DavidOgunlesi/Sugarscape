@@ -55,8 +55,26 @@ s.SetHyperParameter("pollution_per_sugar", 0.2)
 s.SetHyperParameter("diffusion_rate", 1.05)
 s.SetHyperParameter("cultural_tag_length", 11)
 
+# Find the similarity between 2 binary strings
+# Based on number of ones and their positions
+def CulturalSimilarityFunction(culturalTag1: List[int], culturalTag2: List[int]) -> float:
+    # count the number of 1's in the tag
+    one_count1 = culturalTag1.count(1)
+    one_count2 = culturalTag2.count(1)
+    one_count_diff = abs(one_count1 - one_count2)
+
+    # count the number of 1's in the same position
+    same_position_count = 0
+    for i in range(len(culturalTag1)):
+        if culturalTag1[i] == culturalTag2[i]:
+            same_position_count += 1
+
+    # return the similarity
+    return 1 - (one_count_diff + (len(culturalTag1) - same_position_count)) / (2 * len(culturalTag1))
+
 s.SetHyperFunction("cultural_similarity_function", CulturalSimilarityFunction)
 s.SaveEpochs(True, 0)
+
 
 SIM_TIME = 100
 s.RunSimulation(SIM_TIME)
@@ -68,7 +86,7 @@ def Func(scape:Scape, _:int):
     return scape.FilledValueCount(True)
 
 PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"agents",saveStates, True)
-       
+
 PlotScape.AnimPlotTimeSteps(s, "agents", saveStates)    
 
 PlotScape.AnimPlotTimeSteps(s, "sugar", saveStates)   
@@ -90,6 +108,15 @@ def colorByTribe(agent:Agent):
         return 0
     elif tribe == "blue":
         return 1
+
+# use k means to cluster the tags into distinct groups based on cultural similarity threshold
+def colorByTribe(culturalTags: List[List[int]], threshold: float):
+    # get number of clusters
+    num_clusters = 0
+    for i in range(len(culturalTags)):
+        for j in range(i+1, len(culturalTags)):
+            if s.GetHyperFunction("cultural_similarity_function")(culturalTags[i], culturalTags[j]) < threshold:
+                num_clusters += 1
 
 #PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByVision)
 PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByTribe)
