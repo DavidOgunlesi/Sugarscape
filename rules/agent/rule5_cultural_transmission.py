@@ -5,11 +5,11 @@ from typing import List
 from rules.agent.global_agent_funcs import CulturalSimilarityFunction
 
 def Init(sugarscape: Sugarscape, agent: Agent):
-    print("INIT: ", agent.GetProperty("culture_tag") == None)
+    #print("INIT: ", agent.GetProperty("culture_tag") == None)
     if agent.GetProperty("culture_tag") == None:
         agent.SetProperty("culture_tag", rand_key(sugarscape.GetHyperParameter("cultural_tag_length")))
 
-    print(agent.GetProperty("culture_tag"))
+    #print(agent.GetProperty("culture_tag"))
 
 def Step(sugarscape: Sugarscape, agent: Agent):
     visionVectors = [ (0, -1), (-1, 0), (1, 0), (0, 1)]

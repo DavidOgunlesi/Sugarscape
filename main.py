@@ -3,6 +3,7 @@ import random
 import threading
 import matplotlib.pyplot as plt
 from core.lib import *
+from core.agent import Agent
 import time
 
 s = Sugarscape(100)
@@ -110,15 +111,42 @@ def colorByTribe(agent:Agent):
         return 1
 
 # use k means to cluster the tags into distinct groups based on cultural similarity threshold
-def colorByTribe(culturalTags: List[List[int]], threshold: float):
+def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[int, List[int]]:
+    # define hash table to store cluster tags
+    # Dict of group index to list of agents ids
+    agent_groups: Dict[int, List[int]] = {}
     # get number of clusters
     num_clusters = 0
-    for i in range(len(culturalTags)):
-        for j in range(i+1, len(culturalTags)):
-            if s.GetHyperFunction("cultural_similarity_function")(culturalTags[i], culturalTags[j]) < threshold:
+
+    # select first tag as first cluster
+    cluster_tag = agents[0].GetProperty("culture_tag")
+    clusterIndex = 0
+
+    while len(agents)-1 != len(agent_groups):
+        newClusterTag = None
+        # loop through all tags and compare to cluster tag, check if cultural similarity is less than threshold
+        for i in range(len(agents[1:])):
+            if str(agents[i].GetProperty("culture_tag")) in agent_groups:
+                continue
+            if CulturalSimilarityFunction(cluster_tag, agents[i].GetProperty("culture_tag")) < threshold:
+                # Not in cluster
                 num_clusters += 1
+                newClusterTag = agents[i].GetProperty("culture_tag")
+            else:
+                # In cluster
+                if clusterIndex not in agent_groups:
+                    agent_groups[clusterIndex] = []
+
+                agent_groups[clusterIndex].append(agents[i].id)
+    
+        cluster_tag = newClusterTag
+        clusterIndex += 1
+        #print(len(agent_groups), len(agents))
+    return agent_groups
+
 
 #PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByVision)
 PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByTribe)
 #PlotScape.PrintAgentPropertyMean(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
+PlotScape.AnimPlotAgentGrouping(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
 plt.show()
