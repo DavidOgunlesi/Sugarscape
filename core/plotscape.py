@@ -31,6 +31,12 @@ class PlotScape():
     ########################################
     
     @classmethod
+    def AnimPlotAgentGrouping(self ,sugarscape:Sugarscape, groupingFunc: Callable, agentTimesteps: List[List[Agent]], scapeTimesteps: List[Scape], ):
+        agentTimesteps = copy.deepcopy(agentTimesteps)
+        x = lambda scape, epoch : PlotScape.NormaliseScapeByAgentGrouping(agentTimesteps, epoch , scape, groupingFunc)
+        PlotScape.AnimPlotTimeSteps(sugarscape, "agents", scapeTimesteps, x)
+    
+    @classmethod
     def AnimPlotAgentAttributeTimeSteps(self, 
         sugarscape:Sugarscape, 
         scapeTimesteps: List[Scape], 
@@ -42,6 +48,19 @@ class PlotScape():
         x = lambda scape, epoch : PlotScape.NormaliseScapeByAgentAttribute(agentTimesteps, epoch , scape, colorFunc)
         PlotScape.AnimPlotTimeSteps(sugarscape, "agents", scapeTimesteps, x)
         
+    @classmethod 
+    def NormaliseScapeByAgentGrouping(self, agentTimesteps: List[List[Agent]], timestep: int, scape:Scape, groupingFunc:Callable):
+        scape.NormaliseOnPlot(False)
+        # Set id to color based of function
+        groups = groupingFunc(agentTimesteps[timestep])
+        for agent in agentTimesteps[timestep]:
+            if agent.id in groups:
+                colorID = groups[agent.id] + 1
+                #print(colorID)
+                scape.SetValue(agent.x, agent.y, colorID)
+            else:
+                scape.SetDefault(agent.x, agent.y)
+    
     @classmethod 
     def NormaliseScapeByAgentAttribute(self, agentTimesteps: List[List[Agent]], timestep: int, scape:Scape, colorAgentFuc:Callable):
         scape.NormaliseOnPlot(False)

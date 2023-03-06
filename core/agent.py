@@ -7,7 +7,7 @@ import names
 class Agent:
         def __init__(self, id, scape: Scape):
             self.scape = scape
-            self.id = id
+            self.id: int = id
             self.x, self.y = self.GetPosition()
             self.properties: Dict[str, Any] = {}
             

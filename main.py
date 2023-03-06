@@ -1,10 +1,8 @@
 from __future__ import annotations
-import random
-import threading
 import matplotlib.pyplot as plt
 from core.lib import *
 from core.agent import Agent
-import time
+from core.plotscape import PlotScape
 
 s = Sugarscape(100)
 s.AddAgents(750)
@@ -77,21 +75,21 @@ s.SetHyperFunction("cultural_similarity_function", CulturalSimilarityFunction)
 s.SaveEpochs(True, 0)
 
 
-SIM_TIME = 100
+SIM_TIME = 10
 s.RunSimulation(SIM_TIME)
-saveStates = s.GetScapeSaveStates()
+scapeStates = s.GetScapeSaveStates()
 agentStates = s.GetAgentSaveStates()
 
 
 def Func(scape:Scape, _:int):
     return scape.FilledValueCount(True)
 
-PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"agents",saveStates, True)
+PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"agents",scapeStates, True)
 
-PlotScape.AnimPlotTimeSteps(s, "agents", saveStates)    
+PlotScape.AnimPlotTimeSteps(s, "agents", scapeStates)    
 
-PlotScape.AnimPlotTimeSteps(s, "sugar", saveStates)   
-PlotScape.AnimPlotTimeSteps(s, "pollution", saveStates)      
+PlotScape.AnimPlotTimeSteps(s, "sugar", scapeStates)   
+PlotScape.AnimPlotTimeSteps(s, "pollution", scapeStates)      
 #plots = ["sugar"]
 #PlotScape.CurrentStatePlot(s, plots)
 
@@ -111,42 +109,64 @@ def colorByTribe(agent:Agent):
         return 1
 
 # use k means to cluster the tags into distinct groups based on cultural similarity threshold
-def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[int, List[int]]:
+def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[int, int]:
     # define hash table to store cluster tags
     # Dict of group index to list of agents ids
-    agent_groups: Dict[int, List[int]] = {}
-    # get number of clusters
-    num_clusters = 0
-
+    #agent_groups: Dict[int, List[int]] = {}
+    # Dict of agents ids to groups
+    agentid_to_groups: Dict[int, int] = {}
+    
+    agentid_to_agent: Dict[int, Agent] = {}
+    
+    for agent in agents:
+        agentid_to_agent[agent.id] = agent
+        
+        
     # select first tag as first cluster
-    cluster_tag = agents[0].GetProperty("culture_tag")
+    cluster_tagAgent = agentid_to_agent[agents[0].id]
+    del agentid_to_agent[agents[0].id]
+    
     clusterIndex = 0
 
-    while len(agents)-1 != len(agent_groups):
-        newClusterTag = None
+    while len(agentid_to_agent) > 0:
+        agentid_to_groups[cluster_tagAgent.id] = clusterIndex
+        
+        newClusterTagAgent = None
+        agent_remove_buffer = []
         # loop through all tags and compare to cluster tag, check if cultural similarity is less than threshold
-        for i in range(len(agents[1:])):
-            if str(agents[i].GetProperty("culture_tag")) in agent_groups:
-                continue
-            if CulturalSimilarityFunction(cluster_tag, agents[i].GetProperty("culture_tag")) < threshold:
+        for _, agent in agentid_to_agent.items():
+            
+            similarity = CulturalSimilarityFunction(cluster_tagAgent.GetProperty("culture_tag"), agent.GetProperty("culture_tag"))
+            if similarity < threshold:
                 # Not in cluster
-                num_clusters += 1
-                newClusterTag = agents[i].GetProperty("culture_tag")
+                newClusterTagAgent = agent
+                print("New cluster tag agent ", newClusterTagAgent.id, " with similarity ", similarity)
             else:
                 # In cluster
-                if clusterIndex not in agent_groups:
-                    agent_groups[clusterIndex] = []
-
-                agent_groups[clusterIndex].append(agents[i].id)
-    
-        cluster_tag = newClusterTag
-        clusterIndex += 1
+                #if clusterIndex not in agent_groups:
+                #    agent_groups[clusterIndex] = []
+                
+                #agent_groups[clusterIndex].append(agent.id)
+                agent_remove_buffer.append(agent.id)
+                agentid_to_groups[agent.id] = clusterIndex
+                #print("Agent ", agents[i].id, " is in cluster ", clusterIndex)
+             
+        for agentid in agent_remove_buffer:
+            del agentid_to_agent[agentid]
+               
+        clusterIndex += 1        
+        del agentid_to_agent[newClusterTagAgent.id]
+        cluster_tagAgent = newClusterTagAgent
+        
+        
         #print(len(agent_groups), len(agents))
-    return agent_groups
+        
+    print("Clustered ", len(agentid_to_groups), " agents into ", clusterIndex, " groups")
+    return agentid_to_groups
 
 
 #PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByVision)
-PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, colorByTribe)
+#PlotScape.AnimPlotAgentAttributeTimeSteps(s, scapeStates, agentStates, colorByTribe)
 #PlotScape.PrintAgentPropertyMean(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
-PlotScape.AnimPlotAgentGrouping(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
+PlotScape.AnimPlotAgentGrouping(s, lambda x : groupAgentsByCultureTags(x, 0.7), agentStates, scapeStates)
 plt.show()
