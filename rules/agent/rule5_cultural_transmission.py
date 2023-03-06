@@ -7,7 +7,7 @@ from rules.agent.global_agent_funcs import CulturalSimilarityFunction
 def Init(sugarscape: Sugarscape, agent: Agent):
     #print("INIT: ", agent.GetProperty("culture_tag") == None)
     if agent.GetProperty("culture_tag") == None:
-        agent.SetProperty("culture_tag", rand_key(sugarscape.GetHyperParameter("cultural_tag_length")))
+        agent.SetProperty("culture_tag", rand_key(sugarscape.GetHyperParameter("cultural_tag_length"), agent.id))
 
     #print(agent.GetProperty("culture_tag"))
 
@@ -54,7 +54,7 @@ def GetNeighbours(sugarscape: Sugarscape, agent: Agent, visionVectors):
 
 # Function to create the
 # random binary string
-def rand_key(p):
+def rand_key(p, seed=0):
    
     # Variable to store the
     # string
@@ -62,11 +62,12 @@ def rand_key(p):
  
     # Loop to find the string
     # of desired length
-    for i in range(p):
+    for _ in range(p):
          
         # randint function to generate
         # 0, 1 randomly and converting
         # the result into str
+        random.seed(seed)
         temp = random.randint(0, 1)
  
         # Concatenation the random 0, 1

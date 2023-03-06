@@ -140,7 +140,7 @@ def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[
             if similarity < threshold:
                 # Not in cluster
                 newClusterTagAgent = agent
-                print("New cluster tag agent ", newClusterTagAgent.id, " with similarity ", similarity)
+                #print("New cluster tag agent ", newClusterTagAgent.id, " with similarity ", similarity)
             else:
                 # In cluster
                 #if clusterIndex not in agent_groups:
@@ -154,14 +154,15 @@ def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[
         for agentid in agent_remove_buffer:
             del agentid_to_agent[agentid]
                
-        clusterIndex += 1        
-        del agentid_to_agent[newClusterTagAgent.id]
+        clusterIndex += 1   
+        if  newClusterTagAgent is not None:
+            del agentid_to_agent[newClusterTagAgent.id]
         cluster_tagAgent = newClusterTagAgent
         
         
         #print(len(agent_groups), len(agents))
         
-    print("Clustered ", len(agentid_to_groups), " agents into ", clusterIndex, " groups")
+    #print("Clustered ", len(agentid_to_groups), " agents into ", clusterIndex, " groups")
     return agentid_to_groups
 
 
