@@ -21,6 +21,9 @@ class Agent:
             
         def SetProperty(self, property_name: str, value):
             self.properties[property_name] = value
+
+        def ModifyProperty(self, property_name: str, value):
+            self.properties[property_name] += value
             
         def GetAllProperties(self, mask: List[str] = None):
             if mask is None:

@@ -4,18 +4,28 @@ from core.lib import *
 from core.agent import Agent
 from core.plotscape import PlotScape
 
+print(" Creating Sugarscape...")
 s = Sugarscape(100)
+
+print(" Adding Agents...")
 s.AddAgents(750)
+
+print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))
 s.CreateScape(Attribute("pollution", 0, 100))
 
-s.GetScape("sugar").FillWithPerlinNoise(octaves=4)
+print(" Filling Scapes...")
+s.GetScape("sugar").FillWithPerlinNoise(octaves=1) # 4
 s.GetScape("sugar").Normalise(True)
+s.GetScape("sugar").DefaultValuesByCutOff(70,False, True, 0.1)
 
-s.GetScape("sugar").DefaultValuesByCutOff(70,False, True, 0.5)
+print(" Adding Rules...")
 
-import rules.scape.rule_seasonal_growback as growback 
+import rules.scape.rule_growback as growback 
 s.AddScapeRule("sugar", growback.Init, growback.Step, growback.CellStep)
+
+import rules.scape.rule_seasonal_growback as seasonal_growback 
+#s.AddScapeRule("sugar", seasonal_growback.Init, seasonal_growback.Step, seasonal_growback.CellStep)
  
 import rules.scape.rule_diffusion as dif 
 #s.AddScapeRule("pollution", dif.Init, dif.Step, dif.CellStep)
@@ -27,20 +37,21 @@ import rules.agent.rule1_movement as rule1
 s.AddAgentRule(rule1.Init, rule1.StepPollutionModified)
 
 import rules.agent.rule2_agent_replacement as rule2
-s.AddAgentRule(rule2.Init, rule2.Step)
+#s.AddAgentRule(rule2.Init, rule2.Step)
 
 import rules.agent.rule3_pollution_formation as rule3
 #s.AddAgentRule(rule3.Init, rule3.Step)
 
 import rules.agent.rule4_sex as rule4
-s.AddAgentRule(rule4.Init, rule4.Step)
+#s.AddAgentRule(rule4.Init, rule4.Step)
 
 import rules.agent.rule5_cultural_transmission as rule5
 s.AddAgentRule(rule5.Init, rule5.Step)
 
 import rules.agent.rule6_combat as rule6
-#s.AddAgentRule(rule6.Init, rule6.Step)
+s.AddAgentRule(rule6.Init, rule6.Step)
 
+print(" Setting Hyperparameters...")
 s.SetHyperParameter("min_metabolism", 10)
 s.SetHyperParameter("max_metabolism", 20)
 s.SetHyperParameter("max_vision", 4)
@@ -53,6 +64,7 @@ s.SetHyperParameter("female_fertile_age_range", (12, 15, 40, 50))
 s.SetHyperParameter("pollution_per_sugar", 0.2)
 s.SetHyperParameter("diffusion_rate", 1.05)
 s.SetHyperParameter("cultural_tag_length", 11)
+s.SetHyperParameter("cultural_similarity_threshold", 0.7)
 
 # Find the similarity between 2 binary strings
 # Based on number of ones and their positions
@@ -76,6 +88,9 @@ s.SaveEpochs(True, 0)
 
 
 SIM_TIME = 10
+
+print("Created Sugarscape...")
+print("Starting Simulation...")
 s.RunSimulation(SIM_TIME)
 scapeStates = s.GetScapeSaveStates()
 agentStates = s.GetAgentSaveStates()

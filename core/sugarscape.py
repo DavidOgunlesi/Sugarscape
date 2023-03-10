@@ -67,12 +67,15 @@ class Sugarscape:
         return agent
            
     def AddAgents(self, agentCount: int):
-        for _ in range(min(agentCount, self.width * self.height)):
-            id = self._totalAgentCount
-            self.agentScape.SetRandomUnit(id, True)
-            agent = Agent(id, self.agentScape)
-            self._agents[id] = agent
-            self._totalAgentCount += 1
+        with alive_bar(max(agentCount, 0)) as bar:
+            for _ in range(min(agentCount, self.width * self.height)):
+                id = self._totalAgentCount
+                self.agentScape.SetRandomUnit(id, True)
+                agent = Agent(id, self.agentScape)
+                self._agents[id] = agent
+                self._totalAgentCount += 1
+                bar.text(f"Adding agent with id: {id} at {agent.x}, {agent.y}")
+                bar()
             
     def _ReplaceAgents(self, agentCount: int):
         for _ in range(min(agentCount, self.width * self.height)):
@@ -134,7 +137,7 @@ class Sugarscape:
 
     def GetHyperFunction(self, attribName:str):
         if attribName in self._defaultFuncProps:
-            return self._defaultProps[attribName]
+            return self._defaultFuncProps[attribName]
         print(f"HyperFunction {attribName} not present on sugarscape.")
         return lambda x: 0
         

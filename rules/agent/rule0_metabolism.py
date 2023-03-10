@@ -9,11 +9,15 @@ def Init(sugarscape: Sugarscape, agent: Agent):
     # If already set (from being born), don't reset
     if agent.GetProperty("metabolism") == None:
         agent.SetProperty("metabolism", random.randint(minMeta, maxMeta))
-    
+        agent.SetProperty("spice_metabolism", random.randint(minMeta, maxMeta))
+        
     #endowment
     min, max = sugarscape.GetHyperParameter("initial_endowment_range")
     if agent.GetProperty("sugar_wealth") == None:
         agent.SetProperty("sugar_wealth", random.randint(min, max))
+    
+    if agent.GetProperty("spice_wealth") == None:
+        agent.SetProperty("spice_wealth", random.randint(min, max))
 
 def Step(sugarscape: Sugarscape, agent: Agent):
     # Collect sugar at position
