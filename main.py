@@ -12,12 +12,17 @@ s.AddAgents(750)
 
 print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))
+s.CreateScape(Attribute("spice", 0, 100))
 s.CreateScape(Attribute("pollution", 0, 100))
 
 print(" Filling Scapes...")
 s.GetScape("sugar").FillWithPerlinNoise(octaves=1) # 4
 s.GetScape("sugar").Normalise(True)
 s.GetScape("sugar").DefaultValuesByCutOff(70,False, True, 0.1)
+
+s.GetScape("spice").FillWithPerlinNoise(octaves=2)
+s.GetScape("spice").Normalise(True)
+s.GetScape("spice").DefaultValuesByCutOff(70,False, True, 0.1)
 
 print(" Adding Rules...")
 
@@ -31,10 +36,10 @@ import rules.scape.rule_diffusion as dif
 #s.AddScapeRule("pollution", dif.Init, dif.Step, dif.CellStep)
  
 import rules.agent.rule0_metabolism as rule0
-s.AddAgentRule(rule0.Init, rule0.Step)
+s.AddAgentRule(rule0.Init, rule0.SugarAndSpiceStep)
 
 import rules.agent.rule1_movement as rule1
-s.AddAgentRule(rule1.Init, rule1.StepPollutionModified)
+s.AddAgentRule(rule1.Init, rule1.StepPollutionAndWelfareModified)
 
 import rules.agent.rule2_agent_replacement as rule2
 #s.AddAgentRule(rule2.Init, rule2.Step)
@@ -84,6 +89,17 @@ def CulturalSimilarityFunction(culturalTag1: List[int], culturalTag2: List[int])
     return 1 - (one_count_diff + (len(culturalTag1) - same_position_count)) / (2 * len(culturalTag1))
 
 s.SetHyperFunction("cultural_similarity_function", CulturalSimilarityFunction)
+
+def GetWelfare(agent: Agent, sugarAddition: float, spiceAddition: float) -> float:
+    spiceWealth = agent.GetProperty("spice_wealth") + spiceAddition
+    sugarWealth = agent.GetProperty("sugar_wealth") + sugarAddition
+    spiceMetabolicRate = agent.GetProperty("spice_metabolism")
+    sugarMetabolicRate = agent.GetProperty("sugar_metabolism")
+    metabolicSum = spiceMetabolicRate + sugarMetabolicRate
+    return (spiceWealth**(spiceMetabolicRate/metabolicSum)) * (sugarWealth**(sugarMetabolicRate/metabolicSum))
+
+s.SetHyperFunction("welfare_function", GetWelfare)
+
 s.SaveEpochs(True, 0)
 
 
@@ -104,6 +120,7 @@ PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"agents",scapeStates, True)
 PlotScape.AnimPlotTimeSteps(s, "agents", scapeStates)    
 
 PlotScape.AnimPlotTimeSteps(s, "sugar", scapeStates)   
+PlotScape.AnimPlotTimeSteps(s, "spice", scapeStates)   
 PlotScape.AnimPlotTimeSteps(s, "pollution", scapeStates)      
 #plots = ["sugar"]
 #PlotScape.CurrentStatePlot(s, plots)
