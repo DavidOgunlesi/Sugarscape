@@ -83,7 +83,7 @@ class PlotScape():
         PlotScape.UpdateTimestep(sugarscape, plot, scapeTimesteps, func)
         #key_press_event <-  -> arrow keys TODO
         self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdateTimestep(sugarscape, plot, scapeTimesteps, func))
-     
+
     @classmethod   
     def UpdateTimestep(self, sugarscape:Sugarscape, plot: str, scapeTimesteps: List[Dict[str, Scape]], func:Callable):
         self.fig.clear()
