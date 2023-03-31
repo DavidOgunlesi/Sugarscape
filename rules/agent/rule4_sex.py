@@ -26,29 +26,36 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         return
     
     # If there is a fertile agent in the neighborhood, reproduce
-    neighbors = GetNeighbours(sugarscape, agent, visionVectors)
-        
-    if len(neighbors) == 0:
+    # neighbors = GetNeighbours(sugarscape, agent, visionVectors)
+    neighbours = agent.GetAgentNeighbours()
+     # Needs to be shuffled to prevent bias
+    random.shuffle(neighbours)
+    
+    if len(neighbours) == 0:
         return
                 
-    Breed(neighbors, sugarscape, agent, visionVectors)
+    Breed(neighbours, sugarscape, agent, visionVectors)
     
 
-def GetNeighbours(sugarscape: Sugarscape, agent: Agent, visionVectors):
-    neighbors = []
-    for i in range(1, agent.GetProperty("vision")+1):
-        for v in visionVectors:
-            x = agent.x + (v[0] * i)
-            y = agent.y + (v[1] * i)
+# def GetNeighbours(sugarscape: Sugarscape, agent: Agent, visionVectors):
+#     neighbors = []
+#     for i in range(1, agent.GetProperty("vision")+1):
+#         for v in visionVectors:
+#             x = agent.x + (v[0] * i)
+#             y = agent.y + (v[1] * i)
             
-            agentNeigbour = sugarscape.GetAgentAtPosition(agent.x + x, agent.y + y)
-            if agentNeigbour != None:
-                neighbors.append(agentNeigbour) 
+#             agentNeigbour = sugarscape.GetAgentAtPosition(agent.x + x, agent.y + y)
+#             if agentNeigbour != None:
+#                 neighbors.append(agentNeigbour) 
                 
-    return neighbors
+#     return neighbors
         
-def Breed(neighbors: List[Agent], sugarscape: Sugarscape, agent: Agent, visionVectors):       
-    potentialMate:Agent = random.choice(neighbors)
+def Breed(neighbours: List[int], sugarscape: Sugarscape, agent: Agent, visionVectors):       
+    potentialMateID:int = random.choice(neighbours)
+    potentialMate:Agent = sugarscape.GetAgentFromId(potentialMateID)
+    
+    if potentialMate == None:
+        return
     
     mateFertile = potentialMate.GetProperty("fertile")
     mateSex = potentialMate.GetProperty("sex")

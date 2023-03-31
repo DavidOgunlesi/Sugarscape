@@ -116,6 +116,11 @@ class Sugarscape:
             return self._agents[id]
         
         return None
+    
+    def GetAgentFromId(self, id:int):
+        if id in self._agents:
+            return self._agents[id]
+        return None
         
     def AddAgentRule(self, init:Callable ,rule:Callable):    
         self.rules.append((init,rule))    
@@ -219,6 +224,7 @@ class Sugarscape:
                 self.agentScape.Clear()
                 for id in self._agents:
                     agent = self._agents[id]
+                    agent.OnEndStep()
                     self.agentScape.SetValue(agent.x, agent.y, agent.id)
                 bar.text(f'Epoch {epoch} complete')  
                 # sleep(0.01)  

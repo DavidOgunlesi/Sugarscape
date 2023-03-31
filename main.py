@@ -6,7 +6,7 @@ print(" Creating Sugarscape...")
 s = Sugarscape(100)
 
 print(" Adding Agents...")
-s.AddAgents(750)
+s.AddAgents(7)
 
 print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))

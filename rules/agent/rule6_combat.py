@@ -18,44 +18,47 @@ def Step(sugarscape: Sugarscape, agent: Agent):
     cultureThreshold = sugarscape.GetHyperParameter("cultural_similarity_threshold")
     best_site = None
     best_reward = 0
-    for i in range(1, agent.GetProperty("vision")+1):
-        for v in visionVectors:
-            x = agent.x + v[0] * i
-            y = agent.y + v[1] * i
+    
+    neighbours = agent.GetAgentNeighbours()
+     # Needs to be shuffled to prevent bias
+    random.shuffle(neighbours)
+    
+    if len(neighbours) == 0:
+        return
+    
+    for neighbourID in neighbours:
+        
+        neighbour = sugarscape.GetAgentFromId(neighbourID)
+        
+        if neighbour == None:
+            continue
+        
+        if neighbour.GetProperty("dead") == 1:
+            continue
 
-            if not agent.scape.IsInBounds(x, y):
+        similarity = simFunc(neighbour.GetProperty("culture_tag"), myCultureTag)
+        
+        # Ignore all sites occupied by members of my own tribe
+        if similarity >= cultureThreshold:
+            continue
+        
+        # Throw out all sites occupied by members of other tribes who are wealthier than me
+        if similarity < cultureThreshold and neighbour.GetProperty("sugar_wealth") > agent.GetProperty("sugar_wealth"):
+            continue
+
+        # if the site has an agent next to it (vunerable to retaliation), ignore it
+        for v2 in visionVectors:
+            agentAtPos = sugarscape.GetAgentAtPosition(neighbour.x + v2[0], neighbour.y + v2[1])
+
+            # If there is an agent at the site and they are of a different tribe, ignore it
+            if agentAtPos != None and simFunc(agentAtPos.GetProperty("culture_tag"), myCultureTag) < cultureThreshold:
                 continue
-            
-            agentNeigbour = sugarscape.GetAgentAtPosition(x, y)
-            if agentNeigbour == None:
-                continue
-            
-            if agentNeigbour.GetProperty("dead") == 1:
-                continue
 
-            similarity = simFunc(agentNeigbour.GetProperty("culture_tag"), myCultureTag)
-            
-            # Ignore all sites occupied by members of my own tribe
-            if similarity >= cultureThreshold:
-                continue
-            
-            # Throw out all sites occupied by members of other tribes who are wealthier than me
-            if similarity < cultureThreshold and agentNeigbour.GetProperty("sugar_wealth") > agent.GetProperty("sugar_wealth"):
-                continue
+        reward = neighbour.GetProperty("sugar_wealth")  #sugarscape.GetScape("sugar").GetValue(x, y)
 
-            # if the site has an agent next to it (vunerable to retaliation), ignore it
-            for v2 in visionVectors:
-                agentAtPos = sugarscape.GetAgentAtPosition(x + v2[0], y + v2[1])
-
-                # If there is an agent at the site and they are of a different tribe, ignore it
-                if agentAtPos != None and simFunc(agentAtPos.GetProperty("culture_tag"), myCultureTag) < cultureThreshold:
-                    continue
-
-            reward = agentNeigbour.GetProperty("sugar_wealth")  #sugarscape.GetScape("sugar").GetValue(x, y)
-
-            if best_reward < reward:
-                best_reward = reward
-                best_site = (x, y)
+        if best_reward < reward:
+            best_reward = reward
+            best_site = (neighbour.x, neighbour.y)
 
     if best_site is None:
         return

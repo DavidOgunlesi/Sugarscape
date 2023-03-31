@@ -6,12 +6,12 @@ import names
 
 class Agent:
         def __init__(self, id, scape: Scape):
-            self.scape = scape
+            self.scape: Scape = scape
             self.id: int = id
             self.x, self.y = self.GetPosition()
             self.properties: Dict[str, Any] = {}
-            
             self.SetProperty("name", names.get_full_name())
+            self.cachedNeighbours: List[int] = []
         
         def GetProperty(self, property_name: str):
             if property_name in self.properties:
@@ -39,4 +39,45 @@ class Agent:
         def MoveTo(self, x, y):
             if self.scape.IsInBounds(x, y) and self.scape.IsCellDefault(x, y):
                 self.x, self.y = x, y
+        
+        def OnEndStep(self):
+            self.cachedNeighbours.clear()
+             
+        def GetAgentNeighbours(self) -> List[int]:
+            
+            if len(self.cachedNeighbours) > 0:
+                return self.cachedNeighbours
+            
+            visionVectors = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+            neighbors = []
+            for i in range(1, self.GetProperty("vision")+1):
+                for v in visionVectors:
+                    x = self.x + (v[0] * i)
+                    y = self.y + (v[1] * i)
+                    
+                    if not self.scape.IsInBounds(x, y):
+                        continue
+                    
+                    agentNeigbour = self.scape.GetValue(x, y)
+                    
+                    if agentNeigbour != None:
+                        neighbors.append(agentNeigbour) 
+                        
+            self.cachedNeighbours = neighbors
+            return neighbors
+        
+        def DoOnTileNeighbours(self, func: Callable[[int,int], None]):
+            
+            visionVectors = [(-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)]
+            for i in range(1, self.GetProperty("vision")+1):
+                for v in visionVectors:
+                    x = self.x + (v[0] * i)
+                    y = self.y + (v[1] * i)
+                    
+                    if not self.scape.IsInBounds(x, y):
+                        continue
+                    
+                    func(x, y)
+                    
+                    
         

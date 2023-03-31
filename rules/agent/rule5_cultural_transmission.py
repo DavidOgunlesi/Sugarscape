@@ -2,7 +2,6 @@ from core.agent import Agent
 from core.sugarscape import Sugarscape
 import random
 from typing import List
-from rules.agent.global_agent_funcs import CulturalSimilarityFunction
 
 def Init(sugarscape: Sugarscape, agent: Agent):
     #print("INIT: ", agent.GetProperty("culture_tag") == None)
@@ -12,9 +11,21 @@ def Init(sugarscape: Sugarscape, agent: Agent):
     #print(agent.GetProperty("culture_tag"))
 
 def Step(sugarscape: Sugarscape, agent: Agent):
-    visionVectors = [ (0, -1), (-1, 0), (1, 0), (0, 1)]
+    #visionVectors = [ (0, -1), (-1, 0), (1, 0), (0, 1)]
     
-    for neighbour in GetNeighbours(sugarscape, agent, visionVectors):
+    neighbours = agent.GetAgentNeighbours()
+     # Needs to be shuffled to prevent bias
+    random.shuffle(neighbours)
+    
+    if len(neighbours) == 0:
+        return
+    
+    for neighbourID in neighbours:
+        neighbour = sugarscape.GetAgentFromId(neighbourID)
+        
+        if neighbour == None:
+            continue
+        
         # For each neighbour a random flag is selected and compared to the agent's flag
         myTag: List[int]  = agent.GetProperty("culture_tag")
         neighbourTag: List[int] = neighbour.GetProperty("culture_tag")
@@ -37,20 +48,7 @@ def ResolveTribe(culturalTag: List[int]):
     
     return "blue"
       
-      
-def GetNeighbours(sugarscape: Sugarscape, agent: Agent, visionVectors):
-    neighbors = []
-    for i in range(1, agent.GetProperty("vision")+1):
-        for v in visionVectors:
-            x = agent.x + (v[0] * i)
-            y = agent.y + (v[1] * i)
-            
-            agentNeigbour = sugarscape.GetAgentAtPosition(agent.x + x, agent.y + y)
-            if agentNeigbour != None:
-                neighbors.append(agentNeigbour) 
-                
-    return neighbors   
-
+    
 
 # Function to create the
 # random binary string
