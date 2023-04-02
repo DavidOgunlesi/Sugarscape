@@ -69,7 +69,7 @@ def Breed(neighbours: List[int], sugarscape: Sugarscape, agent: Agent, visionVec
                 newy = agent.y + y
                 if agent.scape.IsInBounds(newx, newy) and agent.scape.IsCellDefault(newx, newy):
                     child = sugarscape.BirthNewAgentAtPos(newx, newy)
-                    MixAndSetGenetics(child, agent, potentialMate, ["sugar_metabolism","spice_metabolism", "vision", "culture_tag"])
+                    MixAndSetGenetics(child, agent, potentialMate, ["sugar_metabolism","spice_metabolism", "vision", "culture_tag", "immune_string"])
                     break
 
 def MixAndSetGenetics(child: Agent, parent1:Agent, parent2: Agent, propsToMix:List[str] = None):

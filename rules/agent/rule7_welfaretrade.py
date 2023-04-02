@@ -8,7 +8,7 @@ def Init(sugarscape: Sugarscape, agent: Agent):
             
 
 def Step(sugarscape: Sugarscape, agent: Agent):
-    #visionVectors: List[Tuple[int]] = [ (0, -1), (-1, 0), (1, 0), (0, 1)]
+    
     welfareFunc = sugarscape.GetHyperFunction("welfare_function")
     
     neighbours = agent.GetAgentNeighbours()
@@ -94,7 +94,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         sugarFrom.SetProperty("sugar_wealth", sugarFrom.GetProperty("sugar_wealth") - sugarToTrade)
         spiceFrom.SetProperty("sugar_wealth", spiceFrom.GetProperty("sugar_wealth") + sugarToTrade)
         sugarFrom.SetProperty("spice_wealth", sugarFrom.GetProperty("spice_wealth") + spiceToTrade)
-        print("Trade made")
+        #print("Trade made")
         #end loop
         # Can only trade once per step
         return

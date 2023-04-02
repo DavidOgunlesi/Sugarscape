@@ -79,5 +79,29 @@ class Agent:
                     
                     func(x, y)
                     
+        # Function to create the
+        # random binary string
+        def rand_key(self, length, seed=0):
+        
+            # Variable to store the
+            # string
+            key1 = []
+        
+            # Loop to find the string
+            # of desired length
+            for _ in range(length):
+                
+                # randint function to generate
+                # 0, 1 randomly and converting
+                # the result into str
+                random.seed(seed)
+                temp = random.randint(0, 1)
+        
+                # Concatenation the random 0, 1
+                # to the final result
+                key1.append(temp)
+                
+            return(key1)
+                    
                     
         

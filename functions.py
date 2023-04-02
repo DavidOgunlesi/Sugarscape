@@ -86,6 +86,15 @@ def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[
     return agentid_to_groups
 
 
+# Calculate the Hamming distance between 2 binary strings
+def HammingDistance(str1: List[int], str2: List[int]) -> int:
+    distance = 0
+    for i in range(len(str1)):
+        if str1[i] != str2[i]:
+            distance += 1
+    return distance
+    
+
 def colorByVision(agent:Agent):
     vision = agent.GetProperty("vision")
     if vision > 0 and vision <= 2:

@@ -6,7 +6,7 @@ print(" Creating Sugarscape...")
 s = Sugarscape(100)
 
 print(" Adding Agents...")
-s.AddAgents(7)
+s.AddAgents(50)
 
 print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))
@@ -57,6 +57,9 @@ s.AddAgentRule(rule6.Init, rule6.Step)
 import rules.agent.rule7_welfaretrade as rule7
 s.AddAgentRule(rule7.Init, rule7.Step)
 
+import rules.agent.rule8_disease_processes as rule8
+s.AddAgentRule(rule8.Init, rule8.Step)
+
 print(" Setting Hyperparameters...")
 s.SetHyperParameter("min_metabolism", 10)
 s.SetHyperParameter("max_metabolism", 20)
@@ -71,11 +74,15 @@ s.SetHyperParameter("pollution_per_sugar", 0.2)
 s.SetHyperParameter("diffusion_rate", 1.05)
 s.SetHyperParameter("cultural_tag_length", 11)
 s.SetHyperParameter("cultural_similarity_threshold", 0.7)
-
+s.SetHyperParameter("min_immune_string_length", 3)
+s.SetHyperParameter("max_immune_string_length", 11)
+s.SetHyperParameter("max_disease_string_length", 5)
+s.SetHyperParameter("disease_infection_chance", 0.005)
+s.SetHyperParameter("disease_pool", [{"name":"sugardeath", "string": "010110", "infection_chance": 0.005}])
 
 s.SetHyperFunction("cultural_similarity_function", functions.CulturalSimilarityFunction)
-
 s.SetHyperFunction("welfare_function", functions.GetWelfare)
+s.SetHyperFunction("hamming_distance", functions.HammingDistance)
 
 s.SaveEpochs(True, 0)
 

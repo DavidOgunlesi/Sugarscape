@@ -15,6 +15,7 @@ class Sugarscape:
         self._newAgentCount:int = 0
         self._defaultProps: Dict[str,float] = {}
         self._defaultFuncProps: Dict[str, Callable] = {}
+        
         self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]]) = ([],[])
         self.rules: List[(Callable, Callable)] = []
         self._agentCreateBuffer: Dict[str, Agent] = {}
