@@ -13,9 +13,9 @@ class Sugarscape:
         self._agents: Dict[int,Agent] = {} # Dict of agent ids and their respective agents
         self._totalAgentCount = 0
         self._newAgentCount:int = 0
-        self._defaultProps: Dict[str,float] = {}
+        self._defaultProps: Dict[str, float] = {}
         self._defaultFuncProps: Dict[str, Callable] = {}
-        
+        self._statsProps: Dict[str, float] = {}
         self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]]) = ([],[])
         self.rules: List[(Callable, Callable)] = []
         self._agentCreateBuffer: Dict[str, Agent] = {}
@@ -134,6 +134,9 @@ class Sugarscape:
     
     def SetHyperFunction(self, attribName:str , value:Callable):
         self._defaultFuncProps[attribName] = value
+        
+    def SetStats(self, attribName:str , value:float):
+        self._statsProps[attribName] = value
 
     def GetHyperParameter(self, attribName:str, defaultValue:float = 0):
         if attribName in self._defaultProps:
@@ -146,6 +149,20 @@ class Sugarscape:
             return self._defaultFuncProps[attribName]
         print(f"HyperFunction {attribName} not present on sugarscape.")
         return lambda x: 0
+    
+    def GetStats(self, attribName:str, defaultValue:float = 0, verbose:bool = False):
+        if attribName in self._statsProps:
+            return self._statsProps[attribName]
+        
+        if verbose:
+            print(f"Stats {attribName} not present on sugarscape, defaulting to {defaultValue}")
+        return defaultValue
+    
+    def AddStats(self, attribName:str, value:float):
+        if attribName in self._statsProps:
+            self._statsProps[attribName] += value
+        else:
+            self._statsProps[attribName] = value
         
     def SaveEpochs(self, value:bool, epochSkip:int = 0):
         self.saveEpochs = value 

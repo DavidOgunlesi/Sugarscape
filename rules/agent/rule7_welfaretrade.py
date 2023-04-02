@@ -76,6 +76,9 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         welfare_after_trade1 = welfareFunc(spiceFrom, sugarToTrade, -spiceToTrade)
         welfare_after_trade2 = welfareFunc(sugarFrom, -sugarToTrade, spiceToTrade)
 
+        if isinstance(welfare_after_trade1, complex) or isinstance(welfare_after_trade2, complex):
+            continue
+
         #check if trade makes both agents better off (increases welfare)
         if welfare_after_trade1 <= curr_welfare1 and welfare_after_trade2 <= curr_welfare2:
             continue
@@ -88,12 +91,26 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         if curr_welfare1 < curr_welfare2 and welfare_after_trade1 > welfare_after_trade2:
             continue
 
+        # set stats
+        sugarscape.AddStats("total_trade_count", 1)
+        sugarscape.AddStats("total_sugar_trade_fromagent_wealth", spiceFrom.GetProperty("sugar_wealth"))
+        sugarscape.AddStats("total_sugar_trade_toagent_wealth", sugarFrom.GetProperty("sugar_wealth"))
+        sugarscape.AddStats("total_spice_trade_fromagent_wealth", sugarFrom.GetProperty("spice_wealth"))
+        sugarscape.AddStats("total_spice_trade_toagent_wealth", spiceFrom.GetProperty("spice_wealth"))
+        #metabolic rates
+        sugarscape.AddStats("total_sugar_trade_fromagent_metabolism", spiceFrom.GetProperty("sugar_metabolism"))
+        sugarscape.AddStats("total_sugar_trade_toagent_metabolism", sugarFrom.GetProperty("sugar_metabolism"))
+        sugarscape.AddStats("total_spice_trade_fromagent_metabolism", sugarFrom.GetProperty("spice_metabolism"))
+        sugarscape.AddStats("total_spice_trade_toagent_metabolism", spiceFrom.GetProperty("spice_metabolism"))
 
         # do the trade
         spiceFrom.SetProperty("spice_wealth", spiceFrom.GetProperty("spice_wealth") - spiceToTrade)
         sugarFrom.SetProperty("sugar_wealth", sugarFrom.GetProperty("sugar_wealth") - sugarToTrade)
         spiceFrom.SetProperty("sugar_wealth", spiceFrom.GetProperty("sugar_wealth") + sugarToTrade)
         sugarFrom.SetProperty("spice_wealth", sugarFrom.GetProperty("spice_wealth") + spiceToTrade)
+        
+        # trade made
+        
         #print("Trade made")
         #end loop
         # Can only trade once per step

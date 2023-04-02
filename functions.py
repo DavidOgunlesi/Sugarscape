@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import List, Dict
 from core.agent import Agent
-
+from core.sugarscape import Sugarscape
 # Find the similarity between 2 binary strings
 # Based on number of ones and their positions
 def CulturalSimilarityFunction(culturalTag1: List[int], culturalTag2: List[int]) -> float:
@@ -109,3 +109,33 @@ def colorByTribe(agent:Agent):
         return 0
     elif tribe == "blue":
         return 1
+
+def plotEdgeworthBoxPlot(sugarscape:Sugarscape):
+    import pyEdgeworthBox as eb
+    
+    totalTradeCount = sugarscape.GetStats("total_trade_count")
+    
+    spw1 = sugarscape.GetStats("total_spice_trade_fromagent_wealth") / totalTradeCount
+    spw2 = sugarscape.GetStats("total_spice_trade_toagent_wealth") / totalTradeCount
+    sw1 = sugarscape.GetStats("total_sugar_trade_fromagent_wealth") / totalTradeCount
+    sw2 = sugarscape.GetStats("total_sugar_trade_toagent_wealth") / totalTradeCount
+    
+    spm1 = sugarscape.GetStats("total_spice_trade_fromagent_metabolism") / totalTradeCount
+    spm2 = sugarscape.GetStats("total_spice_trade_toagent_metabolism") / totalTradeCount
+    sm1 = sugarscape.GetStats("total_sugar_trade_fromagent_metabolism") / totalTradeCount
+    sm2 = sugarscape.GetStats("total_sugar_trade_toagent_metabolism") / totalTradeCount
+    
+    spiceWealth = [spw1, spw2]
+    sugarWealth = [sw1, sw2]
+    spiceMetabolicRate = [spm1, spm2]
+    sugarMetabolicRate = [sm1, sm2]
+    
+    metabolicSum = [spiceMetabolicRate[0] + sugarMetabolicRate[0], spiceMetabolicRate[1] + sugarMetabolicRate[1]]
+    utilFunc1 = lambda x,y: x**(sugarMetabolicRate[0]/metabolicSum[0])*y**(spiceMetabolicRate[0]/metabolicSum[0])
+    utilFunc2 = lambda x,y: x**(sugarMetabolicRate[1]/metabolicSum[1])*y**(spiceMetabolicRate[1]/metabolicSum[1])
+    
+    EB=eb.EdgeBox(  u1 = utilFunc2
+                , u2 = utilFunc1
+                , IE1 = [sugarWealth[0],spiceWealth[0]]
+                , IE2 = [sugarWealth[1],spiceWealth[1]])
+    EB.plot()

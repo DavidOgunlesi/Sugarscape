@@ -6,7 +6,7 @@ print(" Creating Sugarscape...")
 s = Sugarscape(100)
 
 print(" Adding Agents...")
-s.AddAgents(50)
+s.AddAgents(750)
 
 print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))
@@ -39,14 +39,14 @@ s.AddAgentRule(rule0.Init, rule0.SugarAndSpiceStep)
 import rules.agent.rule1_movement as rule1
 s.AddAgentRule(rule1.Init, rule1.StepPollutionAndWelfareModified)
 
-import rules.agent.rule2_agent_replacement as rule2
-#s.AddAgentRule(rule2.Init, rule2.Step)
+import rules.agent.rule2_agent_aging_processes as rule2
+s.AddAgentRule(rule2.Init, rule2.Step)
 
 import rules.agent.rule3_pollution_formation as rule3
 #s.AddAgentRule(rule3.Init, rule3.Step)
 
 import rules.agent.rule4_sex as rule4
-#s.AddAgentRule(rule4.Init, rule4.Step)
+s.AddAgentRule(rule4.Init, rule4.Step)
 
 import rules.agent.rule5_cultural_transmission as rule5
 s.AddAgentRule(rule5.Init, rule5.Step)
@@ -113,4 +113,8 @@ PlotScape.AnimPlotTimeSteps(s, "pollution", scapeStates)
 #PlotScape.AnimPlotAgentAttributeTimeSteps(s, scapeStates, agentStates, functions.colorByTribe)
 #PlotScape.PrintAgentPropertyMean(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
 PlotScape.AnimPlotAgentGrouping(s, lambda x : functions.groupAgentsByCultureTags(x, 0.7), agentStates, scapeStates)
+
+#functions.plotEdgeworthBoxPlot(s)
+
+
 plt.show()
