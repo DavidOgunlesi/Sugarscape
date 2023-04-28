@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List
 
 def CulturalSimilarityFunction(culturalTag1: List[int], culturalTag2: List[int]) -> float:
@@ -54,20 +55,76 @@ def culstertags(culturalTags: List[List[int]], threshold: float = 1):
 # metabolicSum = spiceMetabolicRate + sugarMetabolicRate
 # print((spiceWealth**(spiceMetabolicRate/metabolicSum)) * (sugarWealth**(sugarMetabolicRate/metabolicSum)))
 
-import pyEdgeworthBox as eb
+# import pyEdgeworthBox as eb
 
-spiceWealth = [4,2]
-sugarWealth = [2,6]
-spiceMetabolicRate = [1.4,1.6]
-sugarMetabolicRate = [1.2,1.8]
-metabolicSum = [spiceMetabolicRate[0] + sugarMetabolicRate[0], spiceMetabolicRate[1] + sugarMetabolicRate[1]]
-utilFunc1 = lambda x,y: x**(sugarMetabolicRate[0]/metabolicSum[0])*y**(spiceMetabolicRate[0]/metabolicSum[0])
-utilFunc2 = lambda x,y: x**(sugarMetabolicRate[1]/metabolicSum[1])*y**(spiceMetabolicRate[1]/metabolicSum[1])
-EB=eb.EdgeBox(  u1 = utilFunc2
-              , u2 = utilFunc1
-              , IE1 = [sugarWealth[0],spiceWealth[0]]
-              , IE2 = [sugarWealth[1],spiceWealth[1]])
-EB.plot()
-input()
+# spiceWealth = [4,2]
+# sugarWealth = [2,6]
+# spiceMetabolicRate = [1.4,1.6]
+# sugarMetabolicRate = [1.2,1.8]
+# metabolicSum = [spiceMetabolicRate[0] + sugarMetabolicRate[0], spiceMetabolicRate[1] + sugarMetabolicRate[1]]
+# utilFunc1 = lambda x,y: x**(sugarMetabolicRate[0]/metabolicSum[0])*y**(spiceMetabolicRate[0]/metabolicSum[0])
+# utilFunc2 = lambda x,y: x**(sugarMetabolicRate[1]/metabolicSum[1])*y**(spiceMetabolicRate[1]/metabolicSum[1])
+# EB=eb.EdgeBox(  u1 = utilFunc2
+#               , u2 = utilFunc1
+#               , IE1 = [sugarWealth[0],spiceWealth[0]]
+#               , IE2 = [sugarWealth[1],spiceWealth[1]])
+# EB.plot()
+# input()
 
 #TODO: Make function to average all trades and then plot
+import numpy as np
+
+training_set_inputs = np.array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
+training_set_outputs = np.array([[0, 1, 1, 0]]).T
+
+
+
+class NeuralNetwork():
+    def __init__(self, layers: List[int]):
+        
+        l = Layer(layers[0])
+        for i in range(1, len(layers)):
+            l.ConnectLayer(Layer(layers[i]))
+            
+        self.networks = l
+
+    def ForwardPropagate(self, inputs: np.array):
+        curr_layer = self.networks
+        activations = curr_layer.CalculateActivations(inputs)
+        
+        curr_layer = curr_layer.forwardLayer
+        
+        while curr_layer is not None:
+            activations = curr_layer.CalculateActivations(activations)
+            curr_layer = curr_layer.forwardLayer
+            
+        return activations
+    
+    def Train(self, inputs: np.array, desired_outputs: np.array):
+        activations = self.ForwardPropagate(inputs)
+        print(activations)
+
+class Layer():
+    
+    def __init__(self, node_count: int):
+        np.random.seed(1)
+        
+        self.node_count = node_count
+        self.biases = np.random.random((node_count, 1))
+        
+        self.synaptic_weights = None
+            
+        #print(self.synaptic_weights)
+        #print(self.biases)
+        
+    def ConnectLayer(self, output_layer: Layer):
+        self.forwardLayer = output_layer
+        self.synaptic_weights = np.random.random((self.node_count, output_layer.node_count))
+    
+    def CalculateActivations(self, inputs: np.array) -> np.array:
+        return np.dot(self.synaptic_weights, inputs) + self.biases
+        
+        
+neuralnet = NeuralNetwork([3,16,3])
+inputs = np.array([1,1,1])
+print(neuralnet.Train(inputs, None))

@@ -79,6 +79,7 @@ s.SetHyperParameter("max_immune_string_length", 11)
 s.SetHyperParameter("max_disease_string_length", 5)
 s.SetHyperParameter("disease_infection_chance", 0.005)
 s.SetHyperParameter("disease_pool", [{"name":"sugardeath", "string": "010110", "infection_chance": 0.005}])
+s.SetHyperParameter("initial_language_count", 2)
 
 s.SetHyperFunction("cultural_similarity_function", functions.CulturalSimilarityFunction)
 s.SetHyperFunction("welfare_function", functions.GetWelfare)
