@@ -3,21 +3,21 @@ from core.scape import Scape
 from core.agent import Agent
 from core.attribute import Attribute
 from alive_progress import alive_bar
-from time import sleep
+from core.rules import ScapeRule, AgentRule
 
 class Sugarscape:
     
     def __init__(self, width: int, height:int = None):
         self._scapes : Dict[str, Scape] = {} # Dict of attribute names and their respective scape maps
-        self._scapeRules: List[Tuple(str, Callable, Callable, Callable)] = []
-        self._agents: Dict[int,Agent] = {} # Dict of agent ids and their respective agents
+        self._scapeRules: List[ScapeRule] = []
+        self._agents: Dict[int, Agent] = {} # Dict of agent ids and their respective agents
         self._totalAgentCount = 0
         self._newAgentCount:int = 0
         self._defaultProps: Dict[str, float] = {}
         self._defaultFuncProps: Dict[str, Callable] = {}
         self._statsProps: Dict[str, float] = {}
         self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]]) = ([],[])
-        self.rules: List[(Callable, Callable)] = []
+        self.rules: List[AgentRule] = []
         self._agentCreateBuffer: Dict[str, Agent] = {}
         self._agentDeleteBuffer:List[int]  = []
         self.saveEpochs = False
@@ -83,9 +83,9 @@ class Sugarscape:
             id = self._totalAgentCount
             self.agentScape.SetRandomUnit(id, True)
             agent = Agent(id, self.agentScape)
-            for init, _ in self.rules:
+            for agentRule in self.rules:
                 # init agent behaviour
-                init(self, agent)
+                agentRule.init(self, agent)
             self._agents[id] = agent
             self._totalAgentCount += 1
     
@@ -94,9 +94,9 @@ class Sugarscape:
             agent = self._agentCreateBuffer[id]
             self._agents[agent.id] = agent
             #print("BIRTH: ", agent.GetProperty("culture_tag"))
-            for init, _ in self.rules:
+            for agentRule in self.rules:
                 # init agent behaviour
-                init(self, agent)
+                agentRule.init(self, agent)
         self._agentCreateBuffer.clear()
     
     def KillAgent(self, agent:Agent):
@@ -123,11 +123,11 @@ class Sugarscape:
             return self._agents[id]
         return None
         
-    def AddAgentRule(self, init:Callable ,rule:Callable):    
-        self.rules.append((init,rule))    
+    def AddAgentRule(self, init:Callable, rule:Callable):    
+        self.rules.append(AgentRule(init,rule))    
     
     def AddScapeRule(self, scapeName:str, init:Callable, step:Callable, cellstep:Callable):
-        self._scapeRules.append((scapeName, init, step, cellstep))
+        self._scapeRules.append(ScapeRule(scapeName, init, step, cellstep))
     
     def SetHyperParameter(self, attribName:str , value:float):
         self._defaultProps[attribName] = value 
@@ -173,15 +173,15 @@ class Sugarscape:
             self._scapes[scapeName].SaveInitialState()
         
         # Init agents
-        for init, _ in self.rules:
+        for agentRule in self.rules:
             # Run agent behaviour
             for id in self._agents:
-                init(self, self._agents[id])
+                agentRule.init(self, self._agents[id])
         
         # init scapes
-        for _, init, _, _  in self._scapeRules:
+        for scapeRule in self._scapeRules:
             scape = self.GetScape(scapeName)
-            init(self, scape)
+            scapeRule.init(self, scape)
         
     def RunSimulation(self, epochCount: int = 0):
         
@@ -211,21 +211,21 @@ class Sugarscape:
                 # TODO: Optimise this step with Cython + threading
                 # SLOWEST STEP
                 #print("UPDATING SCAPES")
-                for scapeName, _, step, cellstep  in self._scapeRules:
-                    scape = self.GetScape(scapeName)
+                for scapeRule in self._scapeRules:
+                    scape = self.GetScape(scapeRule.scapeName)
                     scape.SaveSnapshot()
-                    step(epoch, self, scape)
+                    scapeRule.step(epoch, self, scape)
                     for i in range(len(scape._scape)):
                         x, y = scape.IndexToCoordinates(i)
-                        cellstep(self, scape, x, y, scape._scape[i])
+                        scapeRule.cellstep(self, scape, x, y, scape._scape[i])
                         
                 # bar.text(f'Updating agents')
                 # TODO: Optimise this step with Cython + threading
                 #print("UPDATING AGENTS")
-                for _, rule in self.rules:
+                for agentRule in self.rules:
                     # Run agent behaviour
                     for id in self._agents:
-                        rule(self, self._agents[id])
+                        agentRule.rule(self, self._agents[id])
                 
                 
                 #print("KILLING AGENTS")
