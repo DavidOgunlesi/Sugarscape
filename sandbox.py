@@ -125,6 +125,9 @@ class Layer():
         return np.dot(self.synaptic_weights, inputs) + self.biases
         
         
-neuralnet = NeuralNetwork([3,16,3])
-inputs = np.array([1,1,1])
-print(neuralnet.Train(inputs, None))
+#neuralnet = NeuralNetwork([3,16,3])
+##inputs = np.array([1,1,1])
+#print(neuralnet.Train(inputs, None))
+
+x = np.array([-1, -1, -1, 4, 5, 5, -1, -1,-1, -1, 2, 65])
+print(np.count_nonzero(x == -1))

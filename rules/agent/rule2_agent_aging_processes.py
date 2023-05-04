@@ -18,7 +18,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
     
     if newAge > max_age:
         #Kill & Create Replacement
-        sugarscape.KillAgent(agent)
+        sugarscape.KillAgent(agent, "old_age")
         
     # if agent.GetProperty("dead") == 1:
     #     sugarscape.AddNewAgent()

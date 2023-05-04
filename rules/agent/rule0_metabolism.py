@@ -46,9 +46,9 @@ def DoSpiceStep(sugarscape: Sugarscape, agent: Agent) -> bool:
     finalSpiceValue = max(finalSpiceValue, 0)
     agent.SetProperty("spice_wealth", finalSpiceValue)
     
-    # if sugar is 0, we are dead
+    # if spice is 0, we are dead
     if finalSpiceValue == 0:
-        sugarscape.KillAgent(agent)
+        sugarscape.KillAgent(agent, "spice_death")
         return False
     return True
 
@@ -68,6 +68,6 @@ def DoSugarStep(sugarscape: Sugarscape, agent: Agent) -> bool:
     
     # if sugar is 0, we are dead
     if finalSugarValue == 0:
-        sugarscape.KillAgent(agent)
+        sugarscape.KillAgent(agent, "sugar_death")
         return False
     return True

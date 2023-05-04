@@ -28,6 +28,23 @@ def GetWelfare(agent: Agent, sugarAddition: float, spiceAddition: float) -> floa
     metabolicSum = spiceMetabolicRate + sugarMetabolicRate
     return (spiceWealth**(spiceMetabolicRate/metabolicSum)) * (sugarWealth**(sugarMetabolicRate/metabolicSum))
 
+def CalculateMarginalRateOfSubstitution(agent: Agent):
+    if agent.GetProperty("sugar_wealth") <= 0:
+        return 0
+    if agent.GetProperty("sugar_wealth") <= 0:
+        return 0
+    
+    timeToSugarDeath = agent.GetProperty("sugar_wealth") / agent.GetProperty("sugar_metabolism")
+    timeToSpiceDeath = agent.GetProperty("spice_wealth") / agent.GetProperty("spice_metabolism")
+
+    return timeToSpiceDeath / timeToSugarDeath
+
+def CalculateAgeAdjustedWelfareIndex(agent: Agent) -> float:
+    welfare = GetWelfare(agent, 0, 0)
+    age = agent.GetProperty("age")
+    life_span = agent.GetProperty("life_span")
+    return welfare * (1 - (age / life_span))
+
 # use custom algo to cluster the tags into distinct groups based on cultural similarity threshold
 def groupAgentsByCultureTags(agents: List[Agent], threshold: float = 1) -> Dict[int, int]:
     # define hash table to store cluster tags

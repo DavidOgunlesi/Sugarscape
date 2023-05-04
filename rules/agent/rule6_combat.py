@@ -64,7 +64,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         return
     
     (newx, newy) = best_site
-    if best_site != None and agent.scape.IsInBounds(newx, newy):
+    if best_site != None and agent.scape.IsInBounds(newx, newy) and agent.scape.CellUnreserved(newx, newy):
         agentToAttack = sugarscape.GetAgentAtPosition(newx, newy)
         
         if agentToAttack == None:
@@ -79,7 +79,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         sugarscape.GetScape("sugar").SetDefault(newx, newy)
 
         # kill agent
-        sugarscape.KillAgent(agentToAttack)
+        sugarscape.KillAgent(agentToAttack, "warfare")
         #print("Agent killed in warfare")
         
         agent.MoveTo(newx, newy)

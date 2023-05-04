@@ -18,7 +18,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         val = sugarscape.GetScape("sugar").GetValue(x, y)
         
         #IF the sugar value is better than the current best, set it as the best
-        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y):
+        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y) and sugarscape.GetScape("agents").CellUnreserved(x, y):
             bestSugarValue = (val, (x, y))
             
         # We don't need to check if sugar value is equal because we 
@@ -44,7 +44,7 @@ def StepPollutionModified(sugarscape: Sugarscape, agent: Agent):
         polVal = sugarscape.GetScape("pollution").GetValue(x, y)
         val = sugarVal/max(polVal, 1)
         #IF the sugar:pollution ratio is better than the current best, set it as the best
-        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y):
+        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y) and sugarscape.GetScape("agents").CellUnreserved(x, y):
             bestSugarValue = (val, (x, y))
             
         # We don't need to check if sugar value is equal because we 
@@ -75,7 +75,7 @@ def StepPollutionAndWelfareModified(sugarscape: Sugarscape, agent: Agent):
         val = welfare/max(polVal, 1)
 
         #If the sugar:pollution ratio is better than the current best, set it as the best
-        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y):
+        if val > bestSugarValue[0] and sugarscape.GetScape("agents").IsCellDefault(x, y) and sugarscape.GetScape("agents").CellUnreserved(x, y):
             bestSugarValue = (val, (x, y))
             
         # We don't need to check if sugar value is equal because we 

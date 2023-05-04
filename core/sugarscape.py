@@ -4,6 +4,8 @@ from core.agent import Agent
 from core.attribute import Attribute
 from alive_progress import alive_bar
 from core.rules import ScapeRule, AgentRule
+import tracemalloc
+import time
 
 class Sugarscape:
     
@@ -23,6 +25,7 @@ class Sugarscape:
         self.saveEpochs = False
         self.epochSkip = 0
         self.agentScape = None
+        self.start_time = time.time()
         if height == None:
             height = width
         
@@ -99,10 +102,13 @@ class Sugarscape:
                 agentRule.init(self, agent)
         self._agentCreateBuffer.clear()
     
-    def KillAgent(self, agent:Agent):
+    def KillAgent(self, agent:Agent, cause:str = "unspecified"):
         agent.SetProperty("dead", 1)
         if agent.id not in self._agentDeleteBuffer:
             self._agentDeleteBuffer.append(agent.id)
+        
+        self.AddStats("deaths", 1)
+        self.AddStats("deaths_" + cause, 1)
             
     def AddNewAgent(self):
         self._newAgentCount += 1
@@ -164,11 +170,19 @@ class Sugarscape:
         else:
             self._statsProps[attribName] = value
         
+    def PrintStats(self):
+        print("Stats: ")
+        for key, value in self._statsProps.items():
+            print(f"{key}: {value}")
+
     def SaveEpochs(self, value:bool, epochSkip:int = 0):
         self.saveEpochs = value 
         self.epochSkip = epochSkip
       
     def __InitialiseSimulation(self):
+        # starting the monitoring
+        tracemalloc.start()
+        self.start_time = time.time()
         for scapeName in self._scapes:
             self._scapes[scapeName].SaveInitialState()
         
@@ -200,6 +214,8 @@ class Sugarscape:
                 self._BirthAgents()
                 
                 self._newAgentCount = 0
+
+                #print(f"Epoch {epoch} started, scape: {self.agentScape.FilledValueCount(False)}")
                 # save state
                 bar.text(f'Saving simulation state')
                 if self.saveEpochs and (epoch) % (self.epochSkip+1) == 0:
@@ -231,7 +247,8 @@ class Sugarscape:
                 #print("KILLING AGENTS")
                 bar.text(f'Killing {len(self._agentDeleteBuffer)} agents')
                 for id in self._agentDeleteBuffer:
-                    del self._agents[id]
+                    if id in self._agents:
+                        del self._agents[id]
                     
                 self._agentDeleteBuffer.clear()
                 
@@ -240,14 +257,27 @@ class Sugarscape:
                 # TODO: Optimise this step with Cython + threading
                 #print("UPDATING AGENT POSITIONS")
                 self.agentScape.Clear()
+                #print(f"cleared scape: {self.agentScape.FilledValueCount(False)}")
+                #print(f"agents: {len(self._agents)}")
                 for id in self._agents:
                     agent = self._agents[id]
                     agent.OnEndStep()
                     self.agentScape.SetValue(agent.x, agent.y, agent.id)
+                #print(bi, ci)
+                
+                #print(f"after agent on scape: {self.agentScape.FilledValueCount(False)} {self.agentScape._scape[0:9999]}")
                 bar.text(f'Epoch {epoch} complete')  
                 # sleep(0.01)  
                 # Increment progress bar
+                #print population
+                #print(f"Epoch {epoch} complete, population: {len(self._agents)}")
                 bar()
+        
+        print(f"--- Ran in {((time.time() - self.start_time)*1000)} ms ---")
+        # displaying the memory
+        print(f'Memory used: {tracemalloc.get_traced_memory()}')
+        # stopping the library
+        tracemalloc.stop()
     
     def GetScapeSaveStates(self):
         return self._saveStates[0]

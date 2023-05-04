@@ -9,5 +9,7 @@ def Step(epoch: int, sugarscape:Sugarscape, scape:Scape):
 
 def CellStep(sugarscape:Sugarscape, scape:Scape, x, y, value: float):
     if value < scape.GetInitial(x, y):
-        scape.SetValue(x, y, value +  sugarscape.GetHyperParameter("sugar_growback_amount", 0))
+        maxVal = scape.GetInitial(x, y)
+        newValue = min(maxVal, maxVal - sugarscape.GetHyperParameter("growback_amount", 0))
+        scape.SetValue(x, y, newValue)
 

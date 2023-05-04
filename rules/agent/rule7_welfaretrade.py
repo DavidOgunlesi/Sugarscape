@@ -10,9 +10,9 @@ def Init(sugarscape: Sugarscape, agent: Agent):
 def Step(sugarscape: Sugarscape, agent: Agent):
     
     welfareFunc = sugarscape.GetHyperFunction("welfare_function")
-    
+    mrsFunc = sugarscape.GetHyperFunction("mrs_function")
     neighbours = agent.GetAgentNeighbours()
-     # Needs to be shuffled to prevent bias
+    # Needs to be shuffled to prevent bias
     random.shuffle(neighbours)
     
     if len(neighbours) == 0:
@@ -31,8 +31,8 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         #factor culture in later
 
         #compute MRS, if equal to neigbout MRS continue
-        myMRS = CalculateMRS(agent)
-        neighbourMRS = CalculateMRS(neighbour)
+        myMRS = mrsFunc(agent)
+        neighbourMRS = mrsFunc(neighbour)
 
         #if they are equal, end
         if myMRS == neighbourMRS:
@@ -115,15 +115,3 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         #end loop
         # Can only trade once per step
         return
-
-
-def CalculateMRS(agent: Agent):
-    if agent.GetProperty("sugar_wealth") == 0:
-        return 0
-    if agent.GetProperty("sugar_wealth") == 0:
-        return 0
-    
-    timeToSugarDeath = agent.GetProperty("sugar_wealth") / agent.GetProperty("sugar_metabolism")
-    timeToSpiceDeath = agent.GetProperty("spice_wealth") / agent.GetProperty("spice_metabolism")
-
-    return timeToSpiceDeath / timeToSugarDeath

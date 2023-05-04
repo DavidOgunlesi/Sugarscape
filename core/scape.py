@@ -1,6 +1,7 @@
 from core.imports import *
 from core.attribute import Attribute
 from nptyping import NDArray, Int32, Float32
+from typing import Set
 
 class Scape():
     def __init__(self, width: int, height: int, scapeAttribute: Attribute): 
@@ -11,6 +12,7 @@ class Scape():
         self._scape_snapshot: NDArray[Float32] = np.array([],dtype=np.float32) # taken at start of each epoch
         self._scape: NDArray[Float32] = np.array([scapeAttribute.defaultValue for _ in range(self.width)] * self.height, dtype=np.float32)
         self.unsetIndexes: List[int] = [i for i in range(len(self._scape))]
+        self.resevedIndexes: Set[int] = set()
         self.dfCache = None
         self.updated = True
         self.normaliseOnPlot = False
@@ -56,10 +58,12 @@ class Scape():
         self._scape[idx] = self.scapeAttribute.defaultValue
         self.updated = True
         
-    def SetValue(self, x: int, y: int, value: int):
+    def SetValue(self, x: int, y: int, value: int) -> bool:
         
         if not self.IsInBounds(x,y):
+            print(f"Cannot set value {value} at {x}, {y} because it is out of bounds of scape")
             logging.exception(f"Cannot set value {value} at {x}, {y} because it is out of bounds of scape")
+            return False
         
         if self.scapeAttribute.minValue is not None:
             value = max(value, self.scapeAttribute.minValue)
@@ -70,15 +74,28 @@ class Scape():
         idx = x + y * self.width
         
         if idx >= len(self._scape):
+            print(f"Cannot set value {value} at {x}, {y} because it is out of bounds of scape")
             logging.exception(f"Cannot set value {value} at {x}, {y} because it is out of bounds of scape")
-            return
+            return False
         
         if idx in self.unsetIndexes:
             self.unsetIndexes.remove(idx)
             
         self._scape[idx] = value
         self.updated = True
+        return True
     
+    def CellUnreserved(self, x: int, y: int) -> bool:
+        idx = x + y * self.width
+        return idx in self.resevedIndexes
+    
+    def ReserveCell(self, x: int, y: int) -> bool:
+        idx = x + y * self.width
+        
+        if idx not in self.resevedIndexes:
+            self.resevedIndexes.add(idx)
+        return True
+
     def FillWithRandomValues(self, minValue: int, maxValue: int, discrete: bool = False):
         if discrete:
             self._scape = np.random.randint(minValue, maxValue,  len(self._scape))
@@ -135,7 +152,7 @@ class Scape():
             defVal = overrivedDefaultValue
         else:
             defVal = self.scapeAttribute.defaultValue
-            
+        self.resevedIndexes = set()
         self._scape = np.array([defVal for _ in range(len(self._scape))], dtype=np.float32)
     
     def PrintScape(self) -> str:
@@ -201,8 +218,13 @@ class Scape():
             defaultValue = 0
         else:
             defaultValue = self.scapeAttribute.defaultValue
-            
-        return len(self._scape) - self._scape.count(defaultValue)    
+        #count = np.count_nonzero(self._scape != defaultValue)
+        #print(defaultValue ,count, len(self._scape))
+        count = 0
+        for i in range(len(self._scape)):
+            if self._scape[i] != defaultValue:
+                count += 1
+        return count #len(self._scape) - count
         
     def Plot(self, width, height):
         if self.updated:

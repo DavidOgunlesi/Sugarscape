@@ -10,7 +10,7 @@ class Agent:
             self.id: int = id
             self.x, self.y = self.GetPosition()
             self.properties: Dict[str, Any] = {}
-            self.SetProperty("name", names.get_full_name())
+            #self.SetProperty("name", names.get_full_name())
             self.cachedNeighbours: List[int] = []
         
         def GetProperty(self, property_name: str):
@@ -23,6 +23,11 @@ class Agent:
             self.properties[property_name] = value
 
         def ModifyProperty(self, property_name: str, value):
+            if property_name not in self.properties:
+                self.properties[property_name] = value
+                return
+            if value == None:
+                return
             self.properties[property_name] += value
             
         def GetAllProperties(self, mask: List[str] = None):
@@ -36,9 +41,12 @@ class Agent:
             coords = self.scape.IndexToCoordinates(idx)
             return coords[0], coords[1]
         
-        def MoveTo(self, x, y):
-            if self.scape.IsInBounds(x, y) and self.scape.IsCellDefault(x, y):
+        def MoveTo(self, x, y) -> bool:
+            if self.scape.IsInBounds(x, y) and self.scape.IsCellDefault(x, y) and self.scape.CellUnreserved(x, y):
                 self.x, self.y = x, y
+                self.scape.ReserveCell(x, y)
+                return True
+            return False
         
         def OnEndStep(self):
             self.cachedNeighbours.clear()

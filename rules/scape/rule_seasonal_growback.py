@@ -28,5 +28,5 @@ def CellStep(sugarscape: Sugarscape, scape:Scape, x, y, value: float):
     else:
         growbackRate = 0.1
     if value < scape.GetInitial(x, y):
-        scape.SetValue(x, y, value + sugarscape.GetHyperParameter("sugar_growback_amount", 0) * growbackRate)
+        scape.SetValue(x, y, value + sugarscape.GetHyperParameter("growback_amount", 0) * growbackRate)
 

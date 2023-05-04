@@ -6,7 +6,7 @@ print(" Creating Sugarscape...")
 s = Sugarscape(100)
 
 print(" Adding Agents...")
-s.AddAgents(750)
+s.AddAgents(1000)
 
 print(" Creating Scapes...")
 s.CreateScape(Attribute("sugar", 0, 100))
@@ -14,22 +14,23 @@ s.CreateScape(Attribute("spice", 0, 100))
 s.CreateScape(Attribute("pollution", 0, 100))
 
 print(" Filling Scapes...")
-s.GetScape("sugar").FillWithPerlinNoise(octaves=1) # 4
+s.GetScape("sugar").FillWithPerlinNoise(octaves=4) # 4
 s.GetScape("sugar").Normalise(True)
-s.GetScape("sugar").DefaultValuesByCutOff(70,False, True, 0.1)
+#s.GetScape("sugar").DefaultValuesByCutOff(70,False, True, 0.1)
 
 s.GetScape("spice").FillWithPerlinNoise(octaves=2)
 s.GetScape("spice").Normalise(True)
-s.GetScape("spice").DefaultValuesByCutOff(70,False, True, 0.1)
+#s.GetScape("spice").DefaultValuesByCutOff(70,False, True, 0.1)
 
 print(" Adding Rules...")
 
 import rules.scape.rule_growback as growback 
 s.AddScapeRule("sugar", growback.Init, growback.Step, growback.CellStep)
-
+s.AddScapeRule("spice", growback.Init, growback.Step, growback.CellStep)
 import rules.scape.rule_seasonal_growback as seasonal_growback 
-#s.AddScapeRule("sugar", seasonal_growback.Init, seasonal_growback.Step, seasonal_growback.CellStep)
- 
+s.AddScapeRule("sugar", seasonal_growback.Init, seasonal_growback.Step, seasonal_growback.CellStep)
+
+
 import rules.scape.rule_diffusion as dif 
 #s.AddScapeRule("pollution", dif.Init, dif.Step, dif.CellStep)
  
@@ -37,7 +38,7 @@ import rules.agent.rule0_metabolism as rule0
 s.AddAgentRule(rule0.Init, rule0.SugarAndSpiceStep)
 
 import rules.agent.rule1_movement as rule1
-s.AddAgentRule(rule1.Init, rule1.StepPollutionAndWelfareModified)
+s.AddAgentRule(rule1.Init, rule1.Step)
 
 import rules.agent.rule2_agent_aging_processes as rule2
 s.AddAgentRule(rule2.Init, rule2.Step)
@@ -67,7 +68,7 @@ s.SetHyperParameter("max_vision", 4)
 s.SetHyperParameter("initial_endowment_range", (50, 100))
 s.SetHyperParameter("life_span_range", (60, 100))
 s.SetHyperParameter("season_change_time", 50)
-s.SetHyperParameter("sugar_growback_amount", 50)
+s.SetHyperParameter("growback_amount", 50)
 s.SetHyperParameter("male_fertile_age_range", (12, 15 , 50, 60))
 s.SetHyperParameter("female_fertile_age_range", (12, 15, 40, 50))
 s.SetHyperParameter("pollution_per_sugar", 0.2)
@@ -84,11 +85,20 @@ s.SetHyperParameter("initial_language_count", 2)
 s.SetHyperFunction("cultural_similarity_function", functions.CulturalSimilarityFunction)
 s.SetHyperFunction("welfare_function", functions.GetWelfare)
 s.SetHyperFunction("hamming_distance", functions.HammingDistance)
+s.SetHyperFunction("mrs_function", functions.CalculateMarginalRateOfSubstitution)
+
+#case study
+s.SetHyperParameter("degeneration_start_age", 50)
+s.SetHyperParameter("adulthood_age", 18)
+s.SetHyperFunction("aawi_function", functions.CalculateAgeAdjustedWelfareIndex)
+s.SetHyperParameter("altrusim_reciprocative_welfare_threshold", 5)
+s.SetHyperParameter("altruism_donation_amount", 10)
+
 
 s.SaveEpochs(True, 0)
 
 
-SIM_TIME = 10
+SIM_TIME = 100
 
 print("Created Sugarscape...")
 print("Starting Simulation...")
@@ -96,6 +106,7 @@ s.RunSimulation(SIM_TIME)
 scapeStates = s.GetScapeSaveStates()
 agentStates = s.GetAgentSaveStates()
 
+s.PrintStats()
 
 def Func(scape:Scape, _:int):
     return scape.FilledValueCount(True)
