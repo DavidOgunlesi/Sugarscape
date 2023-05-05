@@ -2,6 +2,7 @@ from core.imports import *
 from core.scape import Scape
 from core.sugarscape import Sugarscape
 from core.agent import Agent
+
 class PlotScape():
     
     ########################################
@@ -83,6 +84,70 @@ class PlotScape():
         PlotScape.UpdateTimestep(sugarscape, plot, scapeTimesteps, func)
         #key_press_event <-  -> arrow keys TODO
         self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdateTimestep(sugarscape, plot, scapeTimesteps, func))
+
+    @classmethod
+    def AnimPlotPopulationPyramid (self, sugarscape:Sugarscape, agentTimesteps: List[List[Agent]]):
+        self.fig = plt.figure()
+        self.val = 0
+        PlotScape.UpdatePopulationPyramid(sugarscape, agentTimesteps)
+        self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdatePopulationPyramid(sugarscape, agentTimesteps))
+
+    @classmethod
+    def UpdatePopulationPyramid(self, sugarscape:Sugarscape, agentTimesteps: List[List[Agent]]):
+        self.fig.clear()
+        plt.clf()
+        self.val += 1
+        self.val %= len(agentTimesteps)
+        agentTimestep = agentTimesteps[self.val]
+        PlotScape.PlotPopulationPyramid(sugarscape, agentTimestep)
+        plt.draw()
+
+
+    @classmethod
+    def PlotPopulationPyramid(self, sugarscape:Sugarscape, agentTimestep: List[Agent]):
+
+        def CountAgentAgentRange(agents, minage, maxage):
+            count = 0
+            for agent in agents:
+                if agent.GetProperty("age") >= minage and agent.GetProperty("age") <= maxage:
+                    count+=1
+            return count
+        
+        df = pd.DataFrame(columns=['Age', 'M', 'F'])
+        ages = [[100,104],[95,99],[90,94],[85,89], [80,84], [75,79], [70,74], [65,69], [60,64], [55,59], [50,54], [45,49], [40,44], [35,39], [30,34], [25,29], [20,24], [15,19], [10,14], [5,9], [0,4]]
+
+        for age in ages:
+            #df = pd.concat(df, {'Age': age[0], 'M': CountAgentAgentRange(agentTimestep, age[0], age[1]), 'F': CountAgentAgentRange(agentTimestep, age[0], age[1])}, ignore_index=True)
+            df = pd.concat([df, pd.DataFrame.from_records([{'Age': age[0], 'M': CountAgentAgentRange(agentTimestep, age[0], age[1]), 'F': CountAgentAgentRange(agentTimestep, age[0], age[1])}])])
+        
+        y = df['Age']
+        x1 = df['M']
+        x2 = df['F'] * -1
+        # Create a horizontal bar plot
+        ax = self.fig.add_subplot(111)
+
+        # Plot the Male bars
+        ax.barh(y, x1, 5, label='Male', )
+
+        # Plot the Female bars
+        ax.barh(y, x2, 5, label='Female')
+
+        # Set the y-axis label
+        ax.set_ylabel('Age')
+
+        # Set the x-axis label
+        ax.set_xlabel(self.val)
+
+        # Set the x-axis tick values and labels
+        ax.set_xticks([-len(agentTimestep)/8, -len(agentTimestep)/16, 0, len(agentTimestep)/16, len(agentTimestep)/8])
+        ax.set_xticklabels([len(agentTimestep)/8, len(agentTimestep)/16, '0', len(agentTimestep)/16, len(agentTimestep)/8])
+
+        # Set the title
+        ax.set_title('Age Pyramid Japan 2022', fontsize=24)
+
+        # Set the legend
+        ax.legend()
+
 
     @classmethod   
     def UpdateTimestep(self, sugarscape:Sugarscape, plot: str, scapeTimesteps: List[Dict[str, Scape]], func:Callable):

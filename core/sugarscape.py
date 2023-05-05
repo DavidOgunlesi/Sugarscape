@@ -26,6 +26,7 @@ class Sugarscape:
         self.epochSkip = 0
         self.agentScape = None
         self.start_time = time.time()
+        self.init = False
         if height == None:
             height = width
         
@@ -80,7 +81,26 @@ class Sugarscape:
                 self._totalAgentCount += 1
                 bar.text(f"Adding agent with id: {id} at {agent.x}, {agent.y}")
                 bar()
-            
+
+    def GetAllAgents(self):
+        return self._agents.values()
+    
+    def SplitAgentsByPredicate(self, agents: List[Agent], predicate:Callable[[Agent], bool]) -> Tuple[List[Agent], List[Agent]]:
+        return (list(filter(predicate, agents)), list(filter(lambda x: not predicate(x), agents)))
+    
+    def SplitAgentsIntoPercentageGroups(self, agents: List[Agent], total, percentages:List[float]) -> List[List[Agent]]:
+        #print("total", total)
+        groups = []
+        for i in range(len(percentages)):
+            count = int(percentages[i] * total)
+            #print("count", count, total)
+            count = min(count, len(agents))
+            groups.append(agents[:count])
+            agents = agents[count:]
+        
+        #print(len(agents))
+        return groups
+
     def _ReplaceAgents(self, agentCount: int):
         for _ in range(min(agentCount, self.width * self.height)):
             id = self._totalAgentCount
@@ -179,7 +199,9 @@ class Sugarscape:
         self.saveEpochs = value 
         self.epochSkip = epochSkip
       
-    def __InitialiseSimulation(self):
+    def InitialiseSimulation(self):
+        if self.init:
+            return
         # starting the monitoring
         tracemalloc.start()
         self.start_time = time.time()
@@ -197,9 +219,11 @@ class Sugarscape:
             scape = self.GetScape(scapeName)
             scapeRule.init(self, scape)
         
+        self.init = True
+        
     def RunSimulation(self, epochCount: int = 0):
         
-        self.__InitialiseSimulation()
+        self.InitialiseSimulation()
          
         with alive_bar(max(epochCount, 0)) as bar:
             for epoch in range(max(epochCount, 0)):

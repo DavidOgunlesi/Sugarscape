@@ -50,6 +50,7 @@ def Step(sugarscape: Sugarscape, agent: Agent):
     
     # if disease is a substring of immune string, agent is immune
     if currentCodedDisease["string"] in agent.GetProperty("immune_string"):
+        sugarscape.AddStats("immune", 1)
         # print("Agent " + str(agent.id) + " is immune to " + currentCodedDisease["name"])
         return
     
@@ -80,6 +81,11 @@ def Step(sugarscape: Sugarscape, agent: Agent):
     
     # Set agent's immune system string
     agent.SetProperty("immune_string", immune_string)
+
+    # random mortality chance
+    if (random.randint(0,100) < currentCodedDisease["mortality_chance"]*100):
+        sugarscape.KillAgent(agent, "disease")
+        return
     
     
         

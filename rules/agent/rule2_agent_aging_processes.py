@@ -8,7 +8,8 @@ def Init(sugarscape: Sugarscape, agent: Agent):
     if agent.GetProperty("life_span") == None:
         agent.SetProperty("life_span", random.randint(minAge, maxAge))
         
-    agent.SetProperty("age", 0)
+    if agent.GetProperty("age") == None:
+        agent.SetProperty("age", 0)
 
 def Step(sugarscape: Sugarscape, agent: Agent):
     age = agent.GetProperty("age")

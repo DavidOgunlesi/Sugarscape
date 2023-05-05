@@ -129,5 +129,19 @@ class Layer():
 ##inputs = np.array([1,1,1])
 #print(neuralnet.Train(inputs, None))
 
-x = np.array([-1, -1, -1, 4, 5, 5, -1, -1,-1, -1, 2, 65])
-print(np.count_nonzero(x == -1))
+#x = np.array([-1, -1, -1, 4, 5, 5, -1, -1,-1, -1, 2, 65])
+#print(np.count_nonzero(x == -1))
+
+#read csc column into list
+import csv
+ageData = []
+with open('Japan-2022.csv', newline='') as csvfile:
+    reader = csv.reader(csvfile, delimiter=',')
+    #read csc column into list
+    for row in reader:
+        if row[6] != "":
+            ageData.append({"percentage": row[6], "minAge": row[7], "maxAge": row[8]})
+
+    ageData = ageData[1:]
+
+print(ageData)
