@@ -133,15 +133,57 @@ class Layer():
 #print(np.count_nonzero(x == -1))
 
 #read csc column into list
-import csv
-ageData = []
-with open('Japan-2022.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    #read csc column into list
-    for row in reader:
-        if row[6] != "":
-            ageData.append({"percentage": row[6], "minAge": row[7], "maxAge": row[8]})
+# import pandas as pd
+# import matplotlib.pyplot as plt
 
-    ageData = ageData[1:]
+# df = pd.read_csv('casestudy/Japan-2022.csv')
+# # remove last 3 rows from df
+# df = df[:-3]
+# # keep first 3 columns
+# df = df.iloc[:, 0:3]
 
-print(ageData)
+# y = df['Age']
+# x1 = df['M'].apply(lambda x: float(x))
+# x2 = df['F'].apply(lambda x: -float(x))
+# print(x1, x2)
+# fig = plt.figure()
+# # Create a horizontal bar plot
+# ax = fig.add_subplot(111)
+
+# # Plot the Male bars
+# ax.barh(y, x1, 0.9, label='Male')
+
+# # Plot the Female bars
+# ax.barh(y, x2, 0.9, label='Female')
+
+# # Set the y-axis label
+# ax.set_ylabel('Age')
+
+# # Set the x-axis label
+# ax.set_xlabel(f"Population")
+
+# # Set the x-axis tick values and labels
+# t1 = 4000000.0
+# t2 = 8000000.0
+# ax.set_xticks([-t2, -t1, 0, t1, t2])
+# ax.set_xticklabels([t2, t1, '0', t1, t2])
+
+# # Set the title
+# ax.set_title("Japan Population Pyramid 2022", fontsize=16)
+
+# # Set the legend
+# ax.legend()
+
+# plt.show()
+import random
+
+average_life_span = 85.03
+
+# Define the range around the average life span
+range_min = average_life_span - 5  # 5 years below the average
+range_max = average_life_span + 5  # 5 years above the average
+
+# Generate a random age within the defined range
+random_age = random.uniform(range_min, range_max)
+
+print(random_age)

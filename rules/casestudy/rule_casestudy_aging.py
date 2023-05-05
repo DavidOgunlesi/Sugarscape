@@ -14,11 +14,11 @@ def Step(sugarscape: Sugarscape, agent: Agent):
 
     # Increase metabolism
     metabolism = agent.GetProperty("sugar_metabolism")
-    metabolism = metabolism * (1-ageDegenerationFactor)
+    metabolism = metabolism * (1+ageDegenerationFactor)
     agent.SetProperty("sugar_metabolism", metabolism)
 
     metabolism = agent.GetProperty("spice_metabolism")
-    metabolism = metabolism * (1-ageDegenerationFactor)
+    metabolism = metabolism * (1+ageDegenerationFactor)
     agent.SetProperty("spice_metabolism", metabolism)
 
     # Decrease vision

@@ -86,25 +86,25 @@ class PlotScape():
         self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdateTimestep(sugarscape, plot, scapeTimesteps, func))
 
     @classmethod
-    def AnimPlotPopulationPyramid (self, sugarscape:Sugarscape, agentTimesteps: List[List[Agent]]):
+    def AnimPlotPopulationPyramid (self, title:str, agentTimesteps: List[List[Agent]]):
         self.fig = plt.figure()
         self.val = 0
-        PlotScape.UpdatePopulationPyramid(sugarscape, agentTimesteps)
-        self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdatePopulationPyramid(sugarscape, agentTimesteps))
+        PlotScape.UpdatePopulationPyramid(title, agentTimesteps)
+        self.fig.canvas.mpl_connect('button_press_event', lambda event: PlotScape.UpdatePopulationPyramid(title, agentTimesteps))
 
     @classmethod
-    def UpdatePopulationPyramid(self, sugarscape:Sugarscape, agentTimesteps: List[List[Agent]]):
+    def UpdatePopulationPyramid(self, title:str, agentTimesteps: List[List[Agent]]):
         self.fig.clear()
         plt.clf()
         self.val += 1
         self.val %= len(agentTimesteps)
         agentTimestep = agentTimesteps[self.val]
-        PlotScape.PlotPopulationPyramid(sugarscape, agentTimestep)
+        PlotScape.PlotPopulationPyramid(title, agentTimestep)
         plt.draw()
 
 
     @classmethod
-    def PlotPopulationPyramid(self, sugarscape:Sugarscape, agentTimestep: List[Agent]):
+    def PlotPopulationPyramid(self, title:str, agentTimestep: List[Agent]):
 
         def CountAgentAgentRange(agents, minage, maxage):
             count = 0
@@ -136,14 +136,16 @@ class PlotScape():
         ax.set_ylabel('Age')
 
         # Set the x-axis label
-        ax.set_xlabel(self.val)
+        ax.set_xlabel(f"Agent Population \n Epoch {self.val}")
 
         # Set the x-axis tick values and labels
-        ax.set_xticks([-len(agentTimestep)/8, -len(agentTimestep)/16, 0, len(agentTimestep)/16, len(agentTimestep)/8])
-        ax.set_xticklabels([len(agentTimestep)/8, len(agentTimestep)/16, '0', len(agentTimestep)/16, len(agentTimestep)/8])
+        t1 = int(len(agentTimestep)/16)
+        t2 = int(len(agentTimestep)/8)
+        ax.set_xticks([-t2, -t1, 0, t1, t2])
+        ax.set_xticklabels([t2, t1, '0', t1, t2])
 
         # Set the title
-        ax.set_title('Age Pyramid Japan 2022', fontsize=24)
+        ax.set_title(title, fontsize=24)
 
         # Set the legend
         ax.legend()
@@ -168,7 +170,7 @@ class PlotScape():
         plt.draw()
      
     @classmethod   
-    def LinePlotAttributesOverTimeSteps(self, func:Callable, sugarscape:Sugarscape, attribName: str, scapeTimesteps: List[Dict[str, Scape]], normalise:bool = False):
+    def LinePlotAttributesOverTimeSteps(self, func:Callable, sugarscape:Sugarscape, title:str ,attribName: str, scapeTimesteps: List[Dict[str, Scape]], normalise:bool = False):
         #sugarscape = copy.deepcopy(sugarscape)
         #scapeTimesteps = copy.deepcopy(scapeTimesteps)
         
@@ -188,8 +190,34 @@ class PlotScape():
         sns.set_theme(style="whitegrid")
         
         data = pd.DataFrame(data, timesteps)
-        sns.lineplot(data=data, palette="tab10", linewidth=2.5, legend="brief")
+        ax = sns.lineplot(data=data, palette="tab10", linewidth=2.5, legend="brief")
+        ax.set_xlabel("epochs")
+        ax.set_ylabel(attribName)
+        plt.title(title)
         
+
+    @classmethod   
+    def LinePlotStatsOverTimeSteps(self, sugarscape:Sugarscape, title:str, ylabel:str, statName: str, statTimesteps: List[Dict[str, float]]):
+        timesteps = []
+        data = []
+        for i in range(len(statTimesteps)):
+            stats = statTimesteps[i]
+            if statName not in stats:
+                continue
+            stat = stats[statName]
+            epochNum = i*max(sugarscape.epochSkip,1)
+            data.append(stat)
+            timesteps.append(epochNum)
+        
+        sns.set_theme(style="whitegrid")
+        
+        data = pd.DataFrame(data, timesteps)
+        ax = sns.lineplot(data=data, palette="tab10", linewidth=2.5, legend="brief")
+        ax.set_xlabel("epochs")
+        ax.set_ylabel(ylabel)
+        plt.title(title)
+
+
     # TODO: Implement
     @classmethod  
     def SugarscapeComaparisonPlot(self):

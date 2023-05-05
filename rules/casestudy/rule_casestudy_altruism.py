@@ -53,7 +53,8 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         # If they have higher MRS, given them sugar
         # If they have lower MRS, given them spice
         print("Agent " + str(agent.id) + " is transferring resources to agent " + str(lowest_aaw_neighbour.id))
-        
+        sugarscape.AddStats("altruism_share", 1)
+
         amount = sugarscape.GetHyperParameter("altruism_donation_amount")
         if myMRS > mrsFunc(lowest_aaw_neighbour):
             agent.SetProperty("sugar_wealth", agent.GetProperty("sugar_wealth") - amount)

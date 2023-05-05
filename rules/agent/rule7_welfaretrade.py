@@ -110,7 +110,6 @@ def Step(sugarscape: Sugarscape, agent: Agent):
         sugarFrom.SetProperty("spice_wealth", sugarFrom.GetProperty("spice_wealth") + spiceToTrade)
         
         # trade made
-        
         #print("Trade made")
         #end loop
         # Can only trade once per step

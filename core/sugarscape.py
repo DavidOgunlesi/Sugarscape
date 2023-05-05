@@ -1,3 +1,4 @@
+from __future__ import annotations
 from core.imports import *
 from core.scape import Scape
 from core.agent import Agent
@@ -18,7 +19,7 @@ class Sugarscape:
         self._defaultProps: Dict[str, float] = {}
         self._defaultFuncProps: Dict[str, Callable] = {}
         self._statsProps: Dict[str, float] = {}
-        self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]]) = ([],[])
+        self._saveStates: Tuple(List[Dict[str, Scape]], List[List[Agent]], List[Dict[str, float]]) = ([],[],[])
         self.rules: List[AgentRule] = []
         self._agentCreateBuffer: Dict[str, Agent] = {}
         self._agentDeleteBuffer:List[int]  = []
@@ -26,6 +27,7 @@ class Sugarscape:
         self.epochSkip = 0
         self.agentScape = None
         self.start_time = time.time()
+        self._simulationCutOffCriteria = lambda x: False
         self.init = False
         if height == None:
             height = width
@@ -195,6 +197,9 @@ class Sugarscape:
         for key, value in self._statsProps.items():
             print(f"{key}: {value}")
 
+    def SetSimulationCutOffCriteria (self, criteria:Callable[[Sugarscape], bool]):
+        self._simulationCutOffCriteria = criteria
+
     def SaveEpochs(self, value:bool, epochSkip:int = 0):
         self.saveEpochs = value 
         self.epochSkip = epochSkip
@@ -245,7 +250,7 @@ class Sugarscape:
                 if self.saveEpochs and (epoch) % (self.epochSkip+1) == 0:
                     self._saveStates[0].append(copy.deepcopy(self._scapes))
                     self._saveStates[1].append(copy.deepcopy(list(self._agents.values())))
-                    
+                    self._saveStates[2].append(copy.deepcopy(self._statsProps))
                 # bar.text(f'Updating scapes')
                 # Update scape maps
                 # TODO: Optimise this step with Cython + threading
@@ -295,6 +300,9 @@ class Sugarscape:
                 # Increment progress bar
                 #print population
                 #print(f"Epoch {epoch} complete, population: {len(self._agents)}")
+                if self._simulationCutOffCriteria(self):
+                    break
+
                 bar()
         
         print(f"--- Ran in {((time.time() - self.start_time)*1000)} ms ---")
@@ -308,4 +316,7 @@ class Sugarscape:
     
     def GetAgentSaveStates(self):
         return self._saveStates[1]
+    
+    def GetStatSaveStates(self):
+        return self._saveStates[2]
       

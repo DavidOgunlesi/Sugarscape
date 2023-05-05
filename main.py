@@ -1,13 +1,17 @@
 import matplotlib.pyplot as plt
 from core.lib import *
 import functions
-import csv
+from casestudy.case_study_setup import SetUpAgentPopulation
+
+AGENT_COUNT = 1000
+SIM_TIME = 478
 
 print(" Creating Sugarscape...")
 s = Sugarscape(100)
 
 print(" Adding Agents...")
-s.AddAgents(500)
+
+s.AddAgents(AGENT_COUNT)
 
 
 print(" Creating Scapes...")
@@ -63,13 +67,17 @@ s.AddAgentRule(rule7.Init, rule7.Step)
 import rules.agent.rule8_disease_processes as rule8
 s.AddAgentRule(rule8.Init, rule8.Step)
 
+average_life_span = 85.03
+# Define the range around the average life span
+range_min = int(average_life_span - 5)  # 5 years below the average
+range_max = int(average_life_span + 5)  # 5 years above the average
 
 print(" Setting Hyperparameters...")
-s.SetHyperParameter("min_metabolism", 5)
-s.SetHyperParameter("max_metabolism", 10)
+s.SetHyperParameter("min_metabolism", 10)
+s.SetHyperParameter("max_metabolism", 15)
 s.SetHyperParameter("max_vision", 4)
 s.SetHyperParameter("initial_endowment_range", (50, 100))
-s.SetHyperParameter("life_span_range", (60, 100))
+s.SetHyperParameter("life_span_range", (range_min, range_max))
 s.SetHyperParameter("season_change_time", 50)
 s.SetHyperParameter("growback_amount", 50)
 s.SetHyperParameter("male_fertile_age_range", (12, 15 , 50, 60))
@@ -91,11 +99,11 @@ s.SetHyperFunction("hamming_distance", functions.HammingDistance)
 s.SetHyperFunction("mrs_function", functions.CalculateMarginalRateOfSubstitution)
 
 #case study
-s.SetHyperParameter("degeneration_start_age", 60)
+s.SetHyperParameter("degeneration_start_age", 40)
 s.SetHyperParameter("adulthood_age", 18)
 s.SetHyperFunction("aawi_function", functions.CalculateAgeAdjustedWelfareIndex)
-s.SetHyperParameter("altrusim_reciprocative_welfare_threshold", 3)
-s.SetHyperParameter("altruism_donation_amount", 10)
+s.SetHyperParameter("altrusim_reciprocative_welfare_threshold", 100)
+s.SetHyperParameter("altruism_donation_amount", 1)
 
 import rules.casestudy.rule_casestudy_aging as rule_casestudy_aging
 s.AddAgentRule(rule_casestudy_aging.Init, rule_casestudy_aging.Step)
@@ -106,103 +114,32 @@ s.AddAgentRule(rule_casestudy_altruism.Init, rule_casestudy_altruism.Step)
 
 s.SaveEpochs(True, 0)
 
-
-SIM_TIME = 200
-
 print("Created Sugarscape...")
 print("Starting Simulation...")
-
+s.SetSimulationCutOffCriteria(lambda s : len(s.GetAllAgents()) > AGENT_COUNT)
 s.InitialiseSimulation()
-#s.SplitAgentsIntoPercentageGroups(s.GetAllAgents(),)
 
-def CountAgentAgentRange(minage, maxage):
-    count = 0
-    for agent in s.GetAllAgents():
-        if agent.GetProperty("age") >= minage and agent.GetProperty("age") <= maxage:
-            count+=1
-    return count
-
-ageData = []
-with open('Japan-2022.csv', newline='') as csvfile:
-    reader = csv.reader(csvfile, delimiter=',')
-    #read csc column into list
-    reader = list(reader)
-    reader = reader[1:22]
-    for row in reader:
-        if row[6] != "":
-            ageData.append({"male_percentage": float(row[7]), "female_percentage": float(row[8]), "minAge": int(row[9]), "maxAge": int(row[10])})
-
-#print(ageData)
-male_percentages = [ageData[i]["male_percentage"] for i in range(0, len(ageData))]
-female_percentages = [ageData[i]["female_percentage"] for i in range(0, len(ageData))]
-
-males, females = s.SplitAgentsByPredicate(s.GetAllAgents(), lambda agent: agent.GetProperty("sex") == "male")
-male_agentGroups = s.SplitAgentsIntoPercentageGroups(males, 500, male_percentages)
-female_agentGroups = s.SplitAgentsIntoPercentageGroups(females, 500, female_percentages)
-
-groupCatergories = [male_agentGroups, female_agentGroups]
-
-for groupCategory in groupCatergories:
-    for group in groupCategory:
-        minAge = int(ageData[groupCategory.index(group)]["minAge"])
-        maxAge = int(ageData[groupCategory.index(group)]["maxAge"])
-        #print(minAge, maxAge)
-        for agent in group:
-            age = random.randint(minAge, maxAge)
-            agent.SetProperty("age", age)
-
-for agent in s.GetAllAgents():
-    if agent.GetProperty("age") == 0:
-        agent.SetProperty("age", random.randint(0, 100))
-
-#print("---------------")
-#print(CountAgentAgentRange(0, 4))
-# print(CountAgentAgentRange(5, 9))
-# print(CountAgentAgentRange(10, 14))
-# print(CountAgentAgentRange(15, 19))
-# print(CountAgentAgentRange(20, 24))
-# print(CountAgentAgentRange(25, 29))
-# print(CountAgentAgentRange(30, 34))
-# print(CountAgentAgentRange(35, 39))
-# print(CountAgentAgentRange(40, 44))
-# print(CountAgentAgentRange(45, 49))
-# print(CountAgentAgentRange(50, 54))
-# print(CountAgentAgentRange(55, 59))
-# print(CountAgentAgentRange(60, 64))
-# print(CountAgentAgentRange(65, 69))
-# print(CountAgentAgentRange(70, 74))
-# print(CountAgentAgentRange(75, 79))
-# print(CountAgentAgentRange(80, 84))
-# print(CountAgentAgentRange(85, 89))
-# print(CountAgentAgentRange(90, 94))
-# print(CountAgentAgentRange(95, 99))
-# print(CountAgentAgentRange(100, 104))
+SetUpAgentPopulation(s, AGENT_COUNT)
 
 s.RunSimulation(SIM_TIME)
 scapeStates = s.GetScapeSaveStates()
 agentStates = s.GetAgentSaveStates()
+statStates = s.GetStatSaveStates()
 
 s.PrintStats()
 
 def Func(scape:Scape, _:int):
     return scape.FilledValueCount(True)
 
-PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"agents",scapeStates, True)
-
+PlotScape.LinePlotAttributesOverTimeSteps(Func,s,"Agent Population over Time","agents",scapeStates, True)
+#PlotScape.LinePlotStatsOverTimeSteps(s,"Agent Altruism over Time", "Altruism Action Count", "altruism_share", statStates)
 PlotScape.AnimPlotTimeSteps(s, "agents", scapeStates)    
-
 PlotScape.AnimPlotTimeSteps(s, "sugar", scapeStates)   
 PlotScape.AnimPlotTimeSteps(s, "spice", scapeStates)   
 PlotScape.AnimPlotTimeSteps(s, "pollution", scapeStates)      
-#plots = ["sugar"]
-#PlotScape.CurrentStatePlot(s, plots)
-
-#PlotScape.AnimPlotAgentAttributeTimeSteps(s, saveStates, agentStates, functions.colorByVision)
-#PlotScape.AnimPlotAgentAttributeTimeSteps(s, scapeStates, agentStates, functions.colorByTribe)
-#PlotScape.PrintAgentPropertyMean(s, range(0, SIM_TIME), ["vision", "metabolism"], agentStates)
 PlotScape.AnimPlotAgentGrouping(s, lambda x : functions.groupAgentsByCultureTags(x, 0.7), agentStates, scapeStates)
-PlotScape.AnimPlotPopulationPyramid(s, agentStates)
-#functions.plotEdgeworthBoxPlot(s)
+PlotScape.AnimPlotPopulationPyramid("Agent Population Pyramid", agentStates)
+functions.plotEdgeworthBoxPlot(s)
 
 
 plt.show()
